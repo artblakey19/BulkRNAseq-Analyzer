@@ -1,0 +1,64 @@
+# Keep the build context tight — only workflow/ and report/ are COPYed, but
+# Docker still uploads the full context to the daemon, so excluding bulky
+# untracked dirs shortens builds significantly.
+
+.git
+.gitignore
+
+# Python / R local environments
+.venv
+venv
+env
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.ipynb_checkpoints
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user
+renv
+
+# Snakemake runtime state & pipeline outputs (rebuilt on every run)
+.snakemake
+logs
+results
+figure
+run.log
+dry_run.txt
+omnipathr-log
+
+# Quarto build sidecars
+report/template.html
+report/template.pdf
+report/template.tex
+report/template_files
+report/_freeze
+report/.quarto
+
+# Large input data (should be mounted at runtime, not baked)
+Cebu.salmon.merged.gene_counts_length_scaled.tsv
+
+# Agent / IDE / OS
+.claude
+.codex
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Docs don't belong in the image
+README.md
+README.ko.md
+PROPOSAL.md
+AGENTS.md
