@@ -1,38 +1,28 @@
 digraph snakemake_dag {
-    graph[bgcolor=white, margin=0];
-    node[shape=box, style=rounded, fontname=sans,                 fontsize=10, penwidth=2];
-    edge[penwidth=2, color=grey];
-	0[label = "all", color = "0.00 0.6 0.85", style="rounded"];
-	1[label = "qc_summary", color = "0.47 0.6 0.85", style="rounded"];
-	2[label = "exploratory_analysis", color = "0.20 0.6 0.85", style="rounded"];
-	3[label = "deseq2", color = "0.07 0.6 0.85", style="rounded"];
-	4[label = "gsea", color = "0.27 0.6 0.85", style="rounded"];
-	5[label = "ora", color = "0.33 0.6 0.85", style="rounded"];
-	6[label = "tf_activity", color = "0.60 0.6 0.85", style="rounded"];
-	7[label = "pathway_activity", color = "0.40 0.6 0.85", style="rounded"];
-	8[label = "drug_repositioning", color = "0.13 0.6 0.85", style="rounded"];
-	9[label = "render_report", color = "0.53 0.6 0.85", style="rounded"];
-	6 -> 0
-	9 -> 0
-	2 -> 0
-	1 -> 0
-	5 -> 0
-	7 -> 0
-	3 -> 0
-	4 -> 0
-	8 -> 0
+    graph[bgcolor=white, margin=0, rankdir=TB, splines=polyline, ranksep=0.9, nodesep=0.5, fontname=Helvetica];
+    node[shape=box, style="rounded,filled", fillcolor="#F5F5F5", fontname=Helvetica, fontsize=11, penwidth=1.2, margin="0.2,0.1"];
+    edge[penwidth=1.2, color="#888888", arrowsize=0.8, fontname=Helvetica];
+	1[label = "QC"];
+	2[label = "exploratory"];
+	3[label = "DESeq2"];
+	4[label = "GSEA"];
+	5[label = "ORA"];
+	6[label = "TFEA"];
+	7[label = "PROGENy"];
+	8[label = "cMap"];
+	9[label = "Quarto report"];
 	3 -> 4
 	3 -> 5
 	3 -> 6
-	3 -> 7
 	2 -> 7
+	3 -> 7
 	3 -> 8
-	6 -> 9
-	2 -> 9
 	1 -> 9
-	5 -> 9
-	7 -> 9
-	3 -> 9
-	4 -> 9
 	8 -> 9
+	2 -> 9
+	5 -> 9
+	3 -> 9
+	6 -> 9
+	7 -> 9
+	4 -> 9
 }            
