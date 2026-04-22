@@ -98,6 +98,32 @@ docker run --rm \
 
 ---
 
+## Interactive exploration
+
+`Dockerfile.jupyter` builds a companion image with JupyterLab + an R kernel
+(IRkernel) pre-loaded with the same R stack the pipeline uses. The deliverable
+still comes from `bulk-rnaseq` (Snakemake → Quarto); this image is for plot
+iteration, custom figures, and ad-hoc queries against the pipeline outputs.
+
+```bash
+docker build -f Dockerfile.jupyter -t bulk-rnaseq-jupyter:latest .
+
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -e HOME=/tmp \
+    -v "$PWD":/project \
+    -p 8888:8888 \
+    bulk-rnaseq-jupyter:latest
+```
+
+Open the `http://127.0.0.1:8888/lab?token=…` URL printed on startup and launch
+`notebooks/explore.ipynb`. The template mirrors each report section — QC, PCA,
+volcano, enrichment, TF / pathway activity, drug repositioning — loading the
+corresponding `results/**/*.{csv,tsv,rds}` files so cutoffs, labels, and plot
+code can be edited without rerunning Snakemake.
+
+---
+
 ## Inputs
 
 | File                     | Purpose                                                                                                             |

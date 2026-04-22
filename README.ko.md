@@ -96,6 +96,32 @@ docker run --rm \
 
 ---
 
+## 인터랙티브 탐색
+
+`Dockerfile.jupyter`는 JupyterLab + R kernel(IRkernel) + 파이프라인과 동일한
+R 스택을 얹은 컨테이너를 빌드합니다. 최종 리포트는 여전히 `bulk-rnaseq`
+(Snakemake → Quarto)가 생성하고, 이 이미지는 플롯 수정·추가 그림·임시 질의 등
+파이프라인 산출물에 대한 탐색 전용입니다.
+
+```bash
+docker build -f Dockerfile.jupyter -t bulk-rnaseq-jupyter:latest .
+
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -e HOME=/tmp \
+    -v "$PWD":/project \
+    -p 8888:8888 \
+    bulk-rnaseq-jupyter:latest
+```
+
+시작 시 출력되는 `http://127.0.0.1:8888/lab?token=…` URL을 열고
+`notebooks/explore.ipynb`를 실행. 템플릿은 리포트 각 섹션 — QC, PCA, volcano,
+enrichment, TF / pathway activity, drug repositioning — 을 그대로 미러링하며
+대응되는 `results/**/*.{csv,tsv,rds}` 파일을 읽어 cutoff·라벨·플롯 코드를
+Snakemake 재실행 없이 수정 가능.
+
+---
+
 ## 입력 파일
 
 | 파일                     | 용도                                                                                                                |
