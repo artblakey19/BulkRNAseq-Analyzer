@@ -83,9 +83,7 @@ docker run --rm \
 
 ## Jupyter Notebook
 
-JupyterLab + R kernel (IRkernel) + the same R stack the pipeline uses.
-
-Interactive code editing for plot generation and follow-up analyses.
+Interactive Jupyter Notebook environment mirroring the HTML report.
 
 ```bash
 docker run --rm \
@@ -149,8 +147,6 @@ Bulk-RNAseq/
 │   ├── template.qmd             # parameterised Quarto report
 │   ├── sections/                # per-stage partials
 │   └── assets/                  # CSS, JS
-├── tests/
-│   └── test_data/               # 6-sample × 10-gene fixture
 ├── results/                     # pipeline output
 ├── README.md
 └── README.ko.md

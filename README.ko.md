@@ -79,9 +79,8 @@ docker run --rm \
 
 ## Jupyter Notebook
 
-JupyterLab + R kernel(IRkernel) + 파이프라인과 동일한 R 스택.
+HTML report와 동일한 구성을 가진 Interactive 분석 환경
 
-Interactive하게 코드를 수정할 수 있고 plot 생성, 추가 분석에 활용가능.
 ```bash
 docker run --rm \
     -v "$PWD":/project \
@@ -144,8 +143,6 @@ Bulk-RNAseq/
 │   ├── template.qmd             # Quarto 리포트 템플릿
 │   ├── sections/                # 각 분석 단계별 코드
 │   └── assets/                  # CSS, JS
-├── tests/
-│   └── test_data/               # 6샘플 × 10유전자 fixture
 ├── results/                     # 파이프라인 출력
 ├── README.md
 └── README.ko.md
