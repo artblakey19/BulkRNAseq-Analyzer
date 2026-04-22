@@ -18,7 +18,7 @@ Snakemake pipeline that takes salmon gene-count output from **nf-core/rnaseq** a
 
 ## Quick start
 
-You need **two outputs** from a prior nf-core/rnaseq run:
+You need two outputs from a prior nf-core/rnaseq run:
 
 - `salmon.merged.gene_counts_length_scaled.tsv` — the counts matrix
 - `multiqc_data/` — MultiQC's raw data directory (the folder, **not** `multiqc_report.html`)
@@ -55,14 +55,10 @@ HTML report is written to `results/report/report.html`.
 
 ## Docker
 
-Self-contained image bundling Snakemake + conda/mamba. Per-rule R/Python envs
-are built on first run and cached under `.snakemake/conda/` on the mounted
-project directory.
-
 Place the counts TSV and `multiqc_data/` in the directory that will be
-bind-mounted as the Docker volume. Then at the `init` step supply the
+bind-mounted as the Docker volume. Then at the `init` step, supply the
 exact paths and sample info; the container writes `config/config.yaml`,
-`samples.tsv`, `contrasts.tsv` inside that mount.
+`samples.tsv`, `contrasts.tsv` inside the mount.
 
 ```bash
 # Generate config (enter sample information at the prompts)
