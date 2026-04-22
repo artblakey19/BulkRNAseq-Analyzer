@@ -4,6 +4,7 @@
 [![Docker](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml/badge.svg)](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/rnaseq-report-MMB/blob/main/notebooks/colab_pipeline.ipynb)
 [![run with conda](https://img.shields.io/badge/run%20with-conda-44A833?logo=anaconda&logoColor=white)](https://docs.conda.io)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 [![run with jupyter](https://img.shields.io/badge/run%20with-jupyter-F37626?logo=jupyter&logoColor=white)](https://jupyter.org)
@@ -15,6 +16,10 @@ Snakemake pipeline that takes salmon gene-count output from **nf-core/rnaseq** a
 ## Workflow
 
 ![rulegraph](docs/rulegraph.svg)
+
+## Try it in Colab
+
+No local setup required. Click the **Open in Colab** badge above and run the cells top to bottom. Upload your `counts.tsv` and zipped `multiqc_data/`, fill the project-metadata form, set sample conditions in a Python dict, and download `results.zip`. ~10 minutes end-to-end on first run.
 
 ## Quick start
 
@@ -56,39 +61,30 @@ HTML report is written to `results/report/report.html`.
 ## Docker
 
 Place the counts TSV and `multiqc_data/` in the directory that will be
-bind-mounted as the Docker volume. Then at the `init` step, supply the
-exact paths and sample info; the container writes `config/config.yaml`,
-`samples.tsv`, `contrasts.tsv` inside the mount.
+bind-mounted as the Docker volume. The same image serves three sub-commands:
+`init` generates config, the default command runs the pipeline, `jupyter`
+launches JupyterLab for interactive exploration.
 
 ```bash
-# Generate config (enter sample information at the prompts)
+# 1. Generate config (enter sample information at the prompts)
 docker run --rm -it \
     -v "$PWD":/project \
     ghcr.io/artblakey19/bulk-rnaseq:latest init
 
-# Run the pipeline against the generated config
+# 2. Run the pipeline against the generated config
 docker run --rm \
     -v "$PWD":/project \
     ghcr.io/artblakey19/bulk-rnaseq:latest \
     --configfile config/config.yaml --cores all
-```
 
----
-
-## Jupyter Notebook
-
-Interactive Jupyter Notebook environment mirroring the HTML report.
-
-```bash
+# 3. (Optional) Launch JupyterLab to explore results interactively
 docker run --rm \
     -v "$PWD":/project \
     -p 8888:8888 \
-    ghcr.io/artblakey19/bulk-rnaseq-jupyter:latest
+    ghcr.io/artblakey19/bulk-rnaseq:latest jupyter
 ```
 
-- Copy the `http://127.0.0.1:8888/lab?token=...` URL printed in the terminal into your browser.
-- Open `notebooks/explore.ipynb` to analyse.
-- Plot labels, cutoffs, and so on can be adjusted freely without rerunning the full Snakemake pipeline.
+For Jupyter: copy the `http://127.0.0.1:8888/lab?token=...` URL printed in the terminal into your browser, then open `notebooks/explore.ipynb`. Plot labels, cutoffs, and so on can be adjusted without rerunning the Snakemake pipeline.
 
 ---
 

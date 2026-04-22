@@ -1,8 +1,7 @@
 name: Docker
 
-# Publishes both container images to GitHub Container Registry:
-#   ghcr.io/<owner>/bulk-rnaseq          (main pipeline)
-#   ghcr.io/<owner>/bulk-rnaseq-jupyter  (JupyterLab explorer)
+# Publishes the unified pipeline image to GitHub Container Registry:
+#   ghcr.io/<owner>/bulk-rnaseq
 #
 # Triggers:
 #   - push to main          → :latest + :sha-<short>
@@ -15,7 +14,6 @@ on:
     tags: ['v*']
     paths:
       - 'Dockerfile'
-      - 'Dockerfile.jupyter'
       - 'docker/**'
       - 'workflow/**'
       - 'report/**'
@@ -24,7 +22,6 @@ on:
     branches: [main]
     paths:
       - 'Dockerfile'
-      - 'Dockerfile.jupyter'
       - 'docker/**'
       - 'workflow/**'
       - 'report/**'
@@ -40,14 +37,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - image: bulk-rnaseq
-            dockerfile: Dockerfile
-          - image: bulk-rnaseq-jupyter
-            dockerfile: Dockerfile.jupyter
     steps:
       - uses: actions/checkout@v4
 
@@ -72,7 +61,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ matrix.image }}
+          images: ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/bulk-rnaseq
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
@@ -85,10 +74,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ${{ matrix.dockerfile }}
+          file: Dockerfile
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          cache-from: type=gha,scope=bulk-rnaseq
+          cache-to: type=gha,mode=max,scope=bulk-rnaseq

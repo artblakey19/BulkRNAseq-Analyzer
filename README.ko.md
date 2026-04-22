@@ -4,6 +4,7 @@
 [![Docker](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml/badge.svg)](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/rnaseq-report-MMB/blob/main/notebooks/colab_pipeline.ipynb)
 [![run with conda](https://img.shields.io/badge/run%20with-conda-44A833?logo=anaconda&logoColor=white)](https://docs.conda.io)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 [![run with jupyter](https://img.shields.io/badge/run%20with-jupyter-F37626?logo=jupyter&logoColor=white)](https://jupyter.org)
@@ -18,12 +19,16 @@
 
 ## Quick start
 
-선행 nf-core/rnaseq 실행 산출물 두 개가 필요:
+nf-core/rnaseq 분석 결과물 두 개가 필요:
 
 - `salmon.merged.gene_counts_length_scaled.tsv` — count 행렬
 - `multiqc_data/` — MultiQC raw data 디렉터리 (`multiqc_report.html`이 **아님**)
 
-두 파일을 프로젝트 디렉토리에 두고 `init` 단계에서 정확한 경로를 입력한다.
+### Colab에서 실행
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/rnaseq-report-MMB/blob/main/notebooks/colab_pipeline.ipynb)
+
+### 로컬 실행(네이티브)
+입력 데이터를 프로젝트 디렉토리 아래에 두고 `init` 단계에서 정확한 경로를 입력한다.
 
 ```bash
 # 1. Snakemake 설치 (Python venv)
@@ -31,7 +36,7 @@ python3 -m venv .venv
 .venv/bin/pip install snakemake pandas
 
 # 2. config 생성
-#    위 두 입력 파일 경로와 샘플·contrast 정의를 프롬프트로 입력.
+#    위 두 입력 파일 경로와 샘플·contrast 정보를 프롬프트로 입력.
 #    config/config.yaml, config/samples.tsv, config/contrasts.tsv 생성.
 .venv/bin/python workflow/scripts/init_project.py
 
@@ -52,40 +57,31 @@ HTML Report는 `results/report/report.html`에 생성됨.
 
 ---
 
-## Docker
+### 로컬 실행(Docker)
 
-실행 전에 Docker volume을 바인드할 디렉터리에 counts TSV와 `multiqc_data/`를 둔다.
-이어서 `init` 단계에서 정확한 경로와 샘플 정보를 입력하면, 컨테이너 내부에서 `config/config.yaml`, `samples.tsv`, `contrasts.tsv`를 생성함.
+Docker volume을 바인드할 디렉터리에 counts TSV와 `multiqc_data/`를 둔다.
+동일한 이미지가 세 가지 서브커맨드를 제공: `init`이 config 생성, 기본 커맨드가 파이프라인 실행, `jupyter`가 JupyterLab 실행.
 
 ```bash
-# config 생성 (샘플 정보 입력)
+# 1. config 생성 (샘플 정보 입력)
 docker run --rm -it \
     -v "$PWD":/project \
     ghcr.io/artblakey19/bulk-rnaseq:latest init
 
-# 생성된 config로 파이프라인 실행
+# 2. 생성된 config로 파이프라인 실행
 docker run --rm \
     -v "$PWD":/project \
     ghcr.io/artblakey19/bulk-rnaseq:latest \
     --configfile config/config.yaml --cores all
-```
 
----
-
-## Jupyter Notebook
-
-HTML report와 동일한 구성을 가진 Interactive 분석 환경
-
-```bash
+# 3. (선택) JupyterLab으로 결과 interactive 탐색
 docker run --rm \
     -v "$PWD":/project \
     -p 8888:8888 \
-    ghcr.io/artblakey19/bulk-rnaseq-jupyter:latest
+    ghcr.io/artblakey19/bulk-rnaseq:latest jupyter
 ```
 
-- 컨테이너 실행 후 터미널에 출력되는 `http://127.0.0.1:8888/lab?token=...` 형태의 URL을 복사하여 브라우저에 붙여넣기
-- `notebooks/explore.ipynb` 파일을 열어서 분석
-- Snakemake 전체 파이프라인을 재실행할 필요 없이 plot label, cutoff 등을 자유롭게 조정 가능
+Jupyter 사용 시: 컨테이너 실행 후 터미널에 출력되는 `http://127.0.0.1:8888/lab?token=...` URL을 브라우저에 붙여넣고 `notebooks/explore.ipynb`를 연다. Snakemake 전체 파이프라인을 재실행할 필요 없이 plot label·cutoff 등을 자유롭게 조정 가능.
 
 ---
 
