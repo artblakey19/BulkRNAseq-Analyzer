@@ -29,35 +29,30 @@ nf-core/rnaseq ─► salmon counts + multiqc_data
 
 ## Quick start
 
+Place the counts TSV and `multiqc_data/` in the project directory first.
+
 ```bash
 # 1. Install Snakemake (Python venv)
 python3 -m venv .venv
 .venv/bin/pip install snakemake pandas
 
-# 2. Dry-run
+# 2. Generate config (enter sample information at the prompts)
+.venv/bin/python workflow/scripts/init_project.py
+
+# 3. Dry-run
 .venv/bin/snakemake \
   --snakefile workflow/Snakefile \
-  --configfile tests/test_data/config_test.yaml \
+  --configfile config/config.yaml \
   --use-conda -n
 
-# 3. Run
+# 4. Run
 .venv/bin/snakemake \
   --snakefile workflow/Snakefile \
-  --configfile tests/test_data/config_test.yaml \
+  --configfile config/config.yaml \
   --use-conda -c1
 ```
 
 HTML report is written to `results/report/report.html`.
-
-### Initial setup
-
-Run the command below, then enter sample information at the prompts.
-
-```bash
-.venv/bin/python workflow/scripts/init_project.py
-```
-
-Generates `config/config.yaml`, `config/samples.tsv`, `config/contrasts.tsv`.
 
 ---
 
@@ -66,15 +61,6 @@ Generates `config/config.yaml`, `config/samples.tsv`, `config/contrasts.tsv`.
 Self-contained image bundling Snakemake + conda/mamba. Per-rule R/Python envs
 are built on first run and cached under `.snakemake/conda/` on the mounted
 project directory.
-
-Run against the shipped fixture:
-
-```bash
-docker run --rm \
-    -v "$PWD":/project \
-    ghcr.io/artblakey19/bulk-rnaseq:latest \
-    --configfile tests/test_data/config_test.yaml -c1
-```
 
 **Place the counts TSV and `multiqc_data/` in the project directory, then use
 the `init` sub-command to generate `config/config.yaml`, `samples.tsv`,

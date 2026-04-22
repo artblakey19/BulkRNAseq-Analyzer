@@ -29,48 +29,34 @@ nf-core/rnaseq ─► salmon counts + multiqc_data
 
 ## Quick start
 
+프로젝트 디렉터리에 counts TSV와 `multiqc_data/`를 먼저 둔다.
+
 ```bash
 # 1. Snakemake 설치 (Python venv)
 python3 -m venv .venv
 .venv/bin/pip install snakemake pandas
 
-# 2. dry-run 확인
+# 2. config 생성 (샘플 정보 입력)
+.venv/bin/python workflow/scripts/init_project.py
+
+# 3. dry-run 확인
 .venv/bin/snakemake \
   --snakefile workflow/Snakefile \
-  --configfile tests/test_data/config_test.yaml \
+  --configfile config/config.yaml \
   --use-conda -n
 
-# 3. 실행
+# 4. 실행
 .venv/bin/snakemake \
   --snakefile workflow/Snakefile \
-  --configfile tests/test_data/config_test.yaml \
+  --configfile config/config.yaml \
   --use-conda -c1
 ```
 
 HTML Report는 `results/report/report.html`에 생성됨.
 
-### 초기 설정
-
-아래 명령어를 실행 후 샘플에 대한 정보 입력
-
-```bash
-.venv/bin/python workflow/scripts/init_project.py
-```
-
- `config/config.yaml`, `config/samples.tsv`, `config/contrasts.tsv` 자동 생성
-
 ---
 
 ## Docker
-
-내장된 test fixture로 실행:
-
-```bash
-docker run --rm \
-    -v "$PWD":/project \
-    ghcr.io/artblakey19/bulk-rnaseq:latest \
-    --configfile tests/test_data/config_test.yaml -c1
-```
 
 **프로젝트 디렉터리에 counts TSV와 `multiqc_data/`를 둔 뒤,
 `init` 서브커맨드로 `config/config.yaml`, `samples.tsv`, `contrasts.tsv`를
