@@ -22,7 +22,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
 )
-logger = logging.getLogger("pathway_activity")
+logger = logging.getLogger("progeny")
 sys.stderr = open(log_path, "a")
 
 np.random.seed(42)

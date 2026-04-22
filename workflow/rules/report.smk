@@ -1,14 +1,14 @@
-rule drug_repositioning:
+rule cmap:
     input:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
     output:
-        hits = RESULTS / "drug_repositioning" / "{contrast}" / "l2s2_hits.tsv",
+        hits = RESULTS / "cmap" / "{contrast}" / "l2s2_hits.tsv",
     params:
-        top_up = config["drug_repositioning"]["top_up"],
-        top_down = config["drug_repositioning"]["top_down"],
-        service = config["drug_repositioning"]["service"],
+        top_up = config["cmap"]["top_up"],
+        top_down = config["cmap"]["top_down"],
+        service = config["cmap"]["service"],
     log:
-        "logs/drug_repositioning/{contrast}.log",
+        "logs/cmap/{contrast}.log",
     conda:
         "../envs/py-requests.yaml"
     script:
@@ -23,9 +23,9 @@ rule render_report:
         de = expand(RESULTS / "de" / "{contrast}" / "deseq2_results.csv", contrast=CONTRAST_IDS),
         gsea = expand(RESULTS / "enrichment" / "{contrast}" / "gsea_combined.csv", contrast=CONTRAST_IDS),
         ora = expand(RESULTS / "enrichment" / "{contrast}" / "ora_combined.csv", contrast=CONTRAST_IDS),
-        tf = expand(RESULTS / "tf_activity" / "{contrast}" / "tf_scores.tsv", contrast=CONTRAST_IDS),
-        progeny = expand(RESULTS / "pathway_activity" / "{contrast}" / "progeny_scores.tsv", contrast=CONTRAST_IDS),
-        l2s2 = expand(RESULTS / "drug_repositioning" / "{contrast}" / "l2s2_hits.tsv", contrast=CONTRAST_IDS),
+        tf = expand(RESULTS / "tfea" / "{contrast}" / "tf_scores.tsv", contrast=CONTRAST_IDS),
+        progeny = expand(RESULTS / "progeny" / "{contrast}" / "progeny_scores.tsv", contrast=CONTRAST_IDS),
+        l2s2 = expand(RESULTS / "cmap" / "{contrast}" / "l2s2_hits.tsv", contrast=CONTRAST_IDS),
         template = "report/template.qmd",
     output:
         html = RESULTS / "report" / "report.html",

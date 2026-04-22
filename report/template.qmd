@@ -260,7 +260,7 @@ flowchart TD
 
 {{< include sections/_enrichment.qmd >}}
 
-{{< include sections/_drug_repositioning.qmd >}}
+{{< include sections/_cmap.qmd >}}
 
 # Audit trail
 
@@ -286,9 +286,9 @@ prim   <- de_cfg$primary   %||% list(padj = NA, abs_lfc = NA)
 sec    <- de_cfg$secondary %||% list(padj = NA, abs_lfc = NA)
 ora_cfg <- cfg$enrichment$ora  %||% list()
 gsea_cfg <- cfg$enrichment$gsea %||% list()
-tf_cfg   <- cfg$tf_activity     %||% list()
-pw_cfg   <- cfg$pathway_activity %||% list()
-dr_cfg   <- cfg$drug_repositioning %||% list()
+tf_cfg   <- cfg$tfea    %||% list()
+pw_cfg   <- cfg$progeny %||% list()
+dr_cfg   <- cfg$cmap    %||% list()
 
 cat("| Setting | Value |\n|---|---|\n")
 cat(sprintf("| DE prefilter (min count / mode) | %s / %s |\n",

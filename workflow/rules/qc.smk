@@ -1,4 +1,4 @@
-rule qc_summary:
+rule qc:
     input:
         counts = config["input"]["counts_tsv"],
         samples = config["input"]["samples_tsv"],
@@ -11,10 +11,10 @@ rule qc_summary:
     conda:
         "../envs/r-tidyverse.yaml"
     script:
-        "../scripts/qc_summary.R"
+        "../scripts/qc.R"
 
 
-rule exploratory_analysis:
+rule exploratory:
     input:
         counts = config["input"]["counts_tsv"],
         samples = config["input"]["samples_tsv"],

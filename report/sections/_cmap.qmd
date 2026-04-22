@@ -78,7 +78,7 @@ if (is_html_report()) cat("\n</details>\n\n")
 ### L2S2 hits
 
 ```{r dr-l2s2-hits, results='asis', fig.width=8.5, fig.height=8}
-hits_path <- file.path(project_root, "results", "drug_repositioning", cid,
+hits_path <- file.path(project_root, "results", "cmap", cid,
                        "l2s2_hits.tsv")
 hits <- safe_read(hits_path, sep = "\t")
 if (is.null(hits) || nrow(hits) == 0) {
@@ -146,8 +146,8 @@ for (cid in contrasts$contrast_id) {
   env$safe_read    <- safe_read
   env$no_results   <- no_results
   env$de_tbl       <- de_tbl
-  env$top_up       <- cfg$drug_repositioning$top_up %||% 250
-  env$top_down     <- cfg$drug_repositioning$top_down %||% 250
+  env$top_up       <- cfg$cmap$top_up %||% 250
+  env$top_down     <- cfg$cmap$top_down %||% 250
   env$`%||%`       <- `%||%`
 
   out <- knitr::knit_child(

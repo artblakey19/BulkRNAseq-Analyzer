@@ -16,19 +16,23 @@
 
 ![rulegraph](docs/rulegraph.svg)
 
-<sub>재생성: `bash docs/generate_rulegraph.sh` (graphviz 필요).</sub>
----
-
 ## Quick start
 
-프로젝트 디렉터리에 counts TSV와 `multiqc_data/`를 먼저 둔다.
+선행 nf-core/rnaseq 실행 산출물 두 개가 필요:
+
+- `salmon.merged.gene_counts_length_scaled.tsv` — count 행렬
+- `multiqc_data/` — MultiQC raw data 디렉터리 (`multiqc_report.html`이 **아님**)
+
+두 파일을 프로젝트 디렉토리에 두고 `init` 단계에서 정확한 경로를 입력한다.
 
 ```bash
 # 1. Snakemake 설치 (Python venv)
 python3 -m venv .venv
 .venv/bin/pip install snakemake pandas
 
-# 2. config 생성 (샘플 정보 입력)
+# 2. config 생성
+#    위 두 입력 파일 경로와 샘플·contrast 정의를 프롬프트로 입력.
+#    config/config.yaml, config/samples.tsv, config/contrasts.tsv 생성.
 .venv/bin/python workflow/scripts/init_project.py
 
 # 3. dry-run 확인 (선택 — 본 실행 전 DAG 검증)
@@ -50,9 +54,8 @@ HTML Report는 `results/report/report.html`에 생성됨.
 
 ## Docker
 
-**프로젝트 디렉터리에 counts TSV와 `multiqc_data/`를 둔 뒤,
-`init` 서브커맨드로 `config/config.yaml`, `samples.tsv`, `contrasts.tsv`를
-생성하고 파이프라인 실행.**
+실행 전에 Docker volume을 바인드할 디렉터리에 counts TSV와 `multiqc_data/`를 둔다.
+이어서 `init` 단계에서 정확한 경로와 샘플 정보를 입력하면, 컨테이너 내부에서 `config/config.yaml`, `samples.tsv`, `contrasts.tsv`를 생성함.
 
 ```bash
 # config 생성 (샘플 정보 입력)

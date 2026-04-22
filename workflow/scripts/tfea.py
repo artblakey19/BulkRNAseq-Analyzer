@@ -4,7 +4,7 @@ Ported from the prior R implementation (decoupleR) to Python so that all
 decoupler-family analyses (this + PROGENy pathway activity) share a single
 tool, language, and conda env.
 
-Logic structure preserved from tf_activity.R:
+Logic structure preserved from the original R implementation:
   1. log sink setup
   2. param defaults for missing values
   3. method must be "ulm" (only mode supported)
@@ -36,7 +36,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
 )
-logger = logging.getLogger("tf_activity")
+logger = logging.getLogger("tfea")
 sys.stderr = open(log_path, "a")
 
 np.random.seed(42)

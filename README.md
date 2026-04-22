@@ -16,19 +16,24 @@ Snakemake pipeline that takes salmon gene-count output from **nf-core/rnaseq** a
 
 ![rulegraph](docs/rulegraph.svg)
 
-<sub>Regenerate: `bash docs/generate_rulegraph.sh` (requires graphviz).</sub>
----
-
 ## Quick start
 
-Place the counts TSV and `multiqc_data/` in the project directory first.
+You need **two outputs** from a prior nf-core/rnaseq run:
+
+- `salmon.merged.gene_counts_length_scaled.tsv` — the counts matrix
+- `multiqc_data/` — MultiQC's raw data directory (the folder, **not** `multiqc_report.html`)
+
+Place both in the project directory, then supply the exact paths at the
+`init` step.
 
 ```bash
 # 1. Install Snakemake (Python venv)
 python3 -m venv .venv
 .venv/bin/pip install snakemake pandas
 
-# 2. Generate config (enter sample information at the prompts)
+# 2. Generate config
+#    Prompts for the two input paths above + sample / contrast definitions.
+#    Writes config/config.yaml, config/samples.tsv, config/contrasts.tsv.
 .venv/bin/python workflow/scripts/init_project.py
 
 # 3. Dry-run (optional — verifies DAG before running)
@@ -54,9 +59,10 @@ Self-contained image bundling Snakemake + conda/mamba. Per-rule R/Python envs
 are built on first run and cached under `.snakemake/conda/` on the mounted
 project directory.
 
-**Place the counts TSV and `multiqc_data/` in the project directory, then use
-the `init` sub-command to generate `config/config.yaml`, `samples.tsv`,
-`contrasts.tsv` and run the pipeline.**
+Place the counts TSV and `multiqc_data/` in the directory that will be
+bind-mounted as the Docker volume. Then at the `init` step supply the
+exact paths and sample info; the container writes `config/config.yaml`,
+`samples.tsv`, `contrasts.tsv` inside that mount.
 
 ```bash
 # Generate config (enter sample information at the prompts)
@@ -113,7 +119,7 @@ docker run --rm \
 | **Over-representation (ORA)**  | `clusterProfiler::enricher()` + KEGG live REST.                 | Per-DB (GO BP, KEGG, Reactome, Hallmark) top-10 up / down              |
 | **TFEA**                | decoupler + ULM + CollecTRI                                     | Top-30 TFs + full score table                                          |
 | **Pathway activity**           | decoupler + PROGENy                                             | Per-sample z-scored heatmap + treated−control delta (Wilcoxon).        |
-| **cMAP**         | L2S2 paired query on up / down DEG signatures.                  | Ranked perturbagens                                                    |
+| **cMap**         | L2S2 paired query on up / down DEG signatures.                  | Ranked perturbagens                                                    |
 | **Audit trail**                | Config snapshot, MD5, session info                              | Reproducibility block                                                  |
 
 ---

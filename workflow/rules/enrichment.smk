@@ -42,37 +42,37 @@ rule ora:
         "../scripts/ora.R"
 
 
-rule tf_activity:
+rule tfea:
     input:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
     output:
-        scores = RESULTS / "tf_activity" / "{contrast}" / "tf_scores.tsv",
-        top = RESULTS / "tf_activity" / "{contrast}" / "tf_top.tsv",
+        scores = RESULTS / "tfea" / "{contrast}" / "tf_scores.tsv",
+        top = RESULTS / "tfea" / "{contrast}" / "tf_top.tsv",
     params:
-        method = config["tf_activity"]["method"],
-        min_size = config["tf_activity"]["min_size"],
-        padj_cutoff = config["tf_activity"]["padj_cutoff"],
-        top_n = config["tf_activity"]["top_n"],
-        split_complexes = config["tf_activity"]["split_complexes"],
+        method = config["tfea"]["method"],
+        min_size = config["tfea"]["min_size"],
+        padj_cutoff = config["tfea"]["padj_cutoff"],
+        top_n = config["tfea"]["top_n"],
+        split_complexes = config["tfea"]["split_complexes"],
     log:
-        "logs/tf_activity/{contrast}.log",
+        "logs/tfea/{contrast}.log",
     conda:
         "../envs/py-decoupler.yaml"
     script:
-        "../scripts/tf_activity.py"
+        "../scripts/tfea.py"
 
 
-rule pathway_activity:
+rule progeny:
     input:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
         vst_matrix = RESULTS / "exploratory" / "vst_matrix.tsv",
     output:
-        scores = RESULTS / "pathway_activity" / "{contrast}" / "progeny_scores.tsv",
+        scores = RESULTS / "progeny" / "{contrast}" / "progeny_scores.tsv",
     params:
-        top_targets = config["pathway_activity"]["top_targets"],
+        top_targets = config["progeny"]["top_targets"],
     log:
-        "logs/pathway_activity/{contrast}.log",
+        "logs/progeny/{contrast}.log",
     conda:
         "../envs/py-decoupler.yaml"
     script:
-        "../scripts/pathway_activity.py"
+        "../scripts/progeny.py"

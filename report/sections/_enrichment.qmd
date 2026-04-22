@@ -316,7 +316,7 @@ if (is.null(ora) || nrow(ora) == 0) {
 ### TFEA (CollecTRI, ULM)
 
 ```{r enr-tf-activity, results='asis', fig.width=8, fig.height=9}
-tf_path <- file.path(project_root, "results", "tf_activity", cid, "tf_scores.tsv")
+tf_path <- file.path(project_root, "results", "tfea", cid, "tf_scores.tsv")
 tf <- safe_read(tf_path, sep = "\t")
 if (is.null(tf) || nrow(tf) == 0) {
   cat(as.character(no_results("TFEA output is empty (network fetch may have failed).")))
@@ -368,7 +368,7 @@ PROGENy score는 샘플별 signature 활성 추정치(fold change 아님). Pathw
 :::
 
 ```{r enr-progeny-heatmap, fig.width=8.5, fig.height=7}
-pw_path <- file.path(project_root, "results", "pathway_activity", cid,
+pw_path <- file.path(project_root, "results", "progeny", cid,
                      "progeny_scores.tsv")
 pw <- safe_read(pw_path, sep = "\t")
 

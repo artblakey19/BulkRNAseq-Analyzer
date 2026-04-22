@@ -51,7 +51,7 @@ enrichment:
     - {id: KEGG,     label: KEGG}
     - {id: Reactome, label: Reactome}
     - {id: Hallmark, label: Hallmark}
-tf_activity:
+tfea:
   tool: decoupler
   network: collectri
   method: ulm
@@ -59,11 +59,11 @@ tf_activity:
   min_size: 5
   padj_cutoff: 0.05
   top_n: 50
-pathway_activity:
+progeny:
   tool: decoupler
   network: progeny
   top_targets: 500
-drug_repositioning:
+cmap:
   enabled: true
   service: l2s2
   top_up: 250
