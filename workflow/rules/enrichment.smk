@@ -1,3 +1,7 @@
+GSEA_COLLECTION_IDS = [c["id"] for c in config["enrichment"]["gsea"]["collections"]]
+ORA_DATABASE_IDS = [d["id"] for d in config["enrichment"]["ora"]["databases"]]
+
+
 rule gsea:
     input:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
@@ -5,7 +9,7 @@ rule gsea:
         table = RESULTS / "enrichment" / "{contrast}" / "gsea_combined.csv",
         rds = RESULTS / "enrichment" / "{contrast}" / "gsea_combined.rds",
     params:
-        collections = config["enrichment"]["gsea"]["collections"],
+        collections = GSEA_COLLECTION_IDS,
         ranking = config["enrichment"]["gsea"]["ranking"],
         min_size = config["enrichment"]["gsea"]["min_size"],
         max_size = config["enrichment"]["gsea"]["max_size"],
@@ -25,7 +29,7 @@ rule ora:
         table = RESULTS / "enrichment" / "{contrast}" / "ora_combined.csv",
         rds = RESULTS / "enrichment" / "{contrast}" / "ora_combined.rds",
     params:
-        databases = config["enrichment"]["ora"]["databases"],
+        databases = ORA_DATABASE_IDS,
         primary = config["de"]["primary"],
         secondary = config["de"]["secondary"],
         min_input_genes = config["enrichment"]["ora"]["min_input_genes"],

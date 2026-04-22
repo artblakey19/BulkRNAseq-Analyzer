@@ -18,17 +18,14 @@ enr_child_template <- r"---(
 gsea_path <- file.path(project_root, "results", "enrichment", cid, "gsea_combined.csv")
 gsea_all <- safe_read(gsea_path)
 
+.coll_entries <- cfg$enrichment$gsea$collections %||% list()
+.coll_labels <- setNames(
+  vapply(.coll_entries, function(x) x$label %||% x$id, character(1)),
+  vapply(.coll_entries, function(x) x$id, character(1))
+)
 .collection_label <- function(id) {
-  labels <- c(
-    H                    = "Hallmark",
-    C6                   = "Oncogenic",
-    `C2:CP:REACTOME`     = "Reactome",
-    `C2:CP:WIKIPATHWAYS` = "WikiPathways",
-    `C2:CP:PID`          = "PID",
-    `C2:CP:BIOCARTA`     = "BioCarta",
-    `C2:CGP`             = "CGP"
-  )
-  ifelse(id %in% names(labels), unname(labels[id]), id)
+  out <- unname(.coll_labels[id])
+  ifelse(is.na(out), id, out)
 }
 
 .trunc_label <- function(x, n = 50) {
@@ -223,6 +220,17 @@ if (is_html_report()) cat("\n</details>\n\n")
 cat("\n\n#### ORA enrichment results\n\n")
 ora_path <- file.path(project_root, "results", "enrichment", cid, "ora_combined.csv")
 ora <- safe_read(ora_path)
+
+.db_entries <- cfg$enrichment$ora$databases %||% list()
+.db_labels <- setNames(
+  vapply(.db_entries, function(x) x$label %||% x$id, character(1)),
+  vapply(.db_entries, function(x) x$id, character(1))
+)
+.database_label <- function(id) {
+  out <- unname(.db_labels[id])
+  ifelse(is.na(out), id, out)
+}
+
 if (is.null(ora) || nrow(ora) == 0) {
   cat(as.character(no_results("ORA returned no results (insufficient DEG or empty output).")))
 } else {
@@ -236,7 +244,8 @@ if (is.null(ora) || nrow(ora) == 0) {
   for (db in ora_dbs) {
     ora_db <- ora |> dplyr::filter(database == db)
     if (nrow(ora_db) == 0) next
-    cat(sprintf("\n\n##### %s\n\n", db))
+    db_lbl <- .database_label(db)
+    cat(sprintf("\n\n##### %s\n\n", db_lbl))
 
     show_df <- ora_db |>
       dplyr::filter(direction %in% c("up", "down")) |>
@@ -266,7 +275,7 @@ if (is.null(ora) || nrow(ora) == 0) {
         ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.8)) +
         ggplot2::scale_fill_manual(values = c(up = "#c0392b", down = "#2c7bb6")) +
         ggplot2::labs(x = "-log10(p.adjust)", y = NULL,
-                      title = sprintf("Top 10 up / Top 10 down %s terms (by p.adjust)", db)) +
+                      title = sprintf("Top 10 up / Top 10 down %s terms (by p.adjust)", db_lbl)) +
         ggplot2::theme_minimal(base_size = 11) +
         ggplot2::theme(
           axis.text.y = ggplot2::element_text(size = 9),

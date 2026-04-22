@@ -29,22 +29,28 @@ enrichment:
     min_size: 15
     max_size: 500
     seed: 42
+    # Add/remove entries to change which MSigDB collections GSEA runs over.
+    # `id` is the MSigDB collection string (fetched via msigdbr); `label` is
+    # the display name used in the report and notebook.
     collections:
-    - H
-    - C2:CP:REACTOME
-    - C2:CP:WIKIPATHWAYS
-    - C2:CP:PID
-    - C2:CP:BIOCARTA
-    - C2:CGP
-    - C6
+    - {id: H,                   label: Hallmark}
+    - {id: C2:CP:REACTOME,      label: Reactome}
+    - {id: C2:CP:WIKIPATHWAYS,  label: WikiPathways}
+    - {id: C2:CP:PID,           label: PID}
+    - {id: C2:CP:BIOCARTA,      label: BioCarta}
+    - {id: C2:CGP,              label: CGP}
+    - {id: C6,                  label: Oncogenic}
   ora:
     min_input_genes: 100
     max_input_genes: 500
+    # `id` values must match a dispatch branch in workflow/scripts/ora.R
+    # (GO_BP, KEGG, Reactome, Hallmark). Adding a new id requires adding
+    # the enrichment call in that script.
     databases:
-    - GO_BP
-    - KEGG
-    - Reactome
-    - Hallmark
+    - {id: GO_BP,    label: "GO Biological Process"}
+    - {id: KEGG,     label: KEGG}
+    - {id: Reactome, label: Reactome}
+    - {id: Hallmark, label: Hallmark}
 tf_activity:
   tool: decoupler
   network: collectri
