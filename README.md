@@ -61,27 +61,23 @@ HTML report is written to `results/report/report.html`.
 
 Place the counts TSV and `multiqc_report_data/` in the directory that will be bind-mounted as the Docker volume. The same image serves three sub-commands: `init` generates config, the default command runs the pipeline, `jupyter` launches JupyterLab.
 
-Pin a released version (e.g. `v0.1.0`) so the same image reproduces the report. The pinned tag is recorded in the report's reproducibility section. `:latest` is acceptable for casual use but note that Docker reuses locally cached images under that tag without re-pulling — use `--pull=always` or pin a tag for reproducible runs.
-
 ```bash
-IMAGE=ghcr.io/artblakey19/bulk-rnaseq:v0.1.0
-
 # 1. Generate config (enter sample information at the prompts)
 docker run --rm -it \
     -v "$PWD":/project \
-    "$IMAGE" init
+    ghcr.io/artblakey19/bulk-rnaseq:latest init
 
 # 2. Run the pipeline against the generated config
 docker run --rm \
     -v "$PWD":/project \
-    "$IMAGE" \
+    ghcr.io/artblakey19/bulk-rnaseq:latest \
     --configfile config/config.yaml --cores all
 
 # 3. (Optional) Launch JupyterLab to explore results interactively
 docker run --rm \
     -v "$PWD":/project \
     -p 8888:8888 \
-    "$IMAGE" jupyter
+    ghcr.io/artblakey19/bulk-rnaseq:latest jupyter
 ```
 
 For Jupyter: paste the `http://127.0.0.1:8888/lab?token=...` URL printed in the terminal into your browser and open `notebooks/explore.ipynb`. Plot labels, cutoffs, and so on can be adjusted without rerunning the Snakemake pipeline.

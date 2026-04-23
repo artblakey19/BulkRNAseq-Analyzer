@@ -62,27 +62,23 @@ HTML Report는 `results/report/report.html`에 생성됨.
 Docker volume을 바인드할 디렉터리에 counts TSV와 `multiqc_report_data/`를 둔다.
 동일한 이미지가 세 가지 서브커맨드를 제공: `init`이 config 생성, 기본 커맨드가 파이프라인 실행, `jupyter`가 JupyterLab 실행.
 
-재현성을 위해 릴리스된 버전 태그(예: `v0.1.0`)를 고정해서 사용. 해당 태그는 리포트의 재현성 섹션에 기록된다. `:latest`는 가볍게 쓸 때는 괜찮지만, Docker는 로컬에 캐시된 `:latest` 이미지를 재확인 없이 그대로 쓰므로 최신 이미지를 받으려면 `--pull=always`를 붙이거나 버전 태그를 고정해야 한다.
-
 ```bash
-IMAGE=ghcr.io/artblakey19/bulk-rnaseq:v0.1.0
-
 # 1. config 생성 (샘플 정보 입력)
 docker run --rm -it \
     -v "$PWD":/project \
-    "$IMAGE" init
+    ghcr.io/artblakey19/bulk-rnaseq:latest init
 
 # 2. 생성된 config로 파이프라인 실행
 docker run --rm \
     -v "$PWD":/project \
-    "$IMAGE" \
+    ghcr.io/artblakey19/bulk-rnaseq:latest \
     --configfile config/config.yaml --cores all
 
 # 3. (선택) JupyterLab으로 결과 interactive 탐색
 docker run --rm \
     -v "$PWD":/project \
     -p 8888:8888 \
-    "$IMAGE" jupyter
+    ghcr.io/artblakey19/bulk-rnaseq:latest jupyter
 ```
 
 Jupyter 사용 시: 컨테이너 실행 후 터미널에 출력되는 `http://127.0.0.1:8888/lab?token=...` URL을 브라우저에 붙여넣고 `notebooks/explore.ipynb`를 연다. Snakemake 전체 파이프라인을 재실행할 필요 없이 plot label·cutoff 등을 자유롭게 조정 가능.
