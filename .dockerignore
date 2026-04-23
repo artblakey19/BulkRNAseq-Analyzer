@@ -67,6 +67,7 @@ AGENTS.md
 tests
 notebooks
 config
+!config/config.template.yaml
 .github
 Dockerfile
 Dockerfile.jupyter
