@@ -26,7 +26,10 @@ rule render_report:
         tf = expand(RESULTS / "tfea" / "{contrast}" / "tf_scores.tsv", contrast=CONTRAST_IDS),
         progeny = expand(RESULTS / "progeny" / "{contrast}" / "progeny_scores.tsv", contrast=CONTRAST_IDS),
         l2s2 = expand(RESULTS / "cmap" / "{contrast}" / "l2s2_hits.tsv", contrast=CONTRAST_IDS),
-        template = "report/template.qmd",
+        # Resolved against the workflow source (repo root native, /app in
+        # Docker) rather than the Snakemake workdir (/project bind-mount in
+        # Docker), so the baked template is found regardless of CWD.
+        template = str(Path(workflow.basedir).parent / "report" / "template.qmd"),
     output:
         html = RESULTS / "report" / "report.html",
     params:

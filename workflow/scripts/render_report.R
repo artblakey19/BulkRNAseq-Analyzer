@@ -22,7 +22,28 @@ formats       <- snakemake@params[["formats"]]
 if (is.null(formats) || length(formats) == 0) formats <- c("html")
 
 project_root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
-template_abs <- normalizePath(template_path, winslash = "/", mustWork = TRUE)
+template_src <- normalizePath(template_path, winslash = "/", mustWork = TRUE)
+
+# Quarto writes its sidecar (template.html, .quarto/, template_files/, etc.)
+# next to the input. In Docker the baked template lives under /app/report,
+# which is owned by mambauser — after the entrypoint drops to the host UID
+# it becomes read-only, so rendering in place fails. Stage the report dir
+# (and the sibling VERSION file, which the template reads via ../VERSION)
+# into a writable location under the output tree before rendering.
+template_src_dir <- dirname(template_src)
+stage_root       <- file.path(dirname(snakemake@output[["html"]]), "_render")
+stage_report     <- file.path(stage_root, basename(template_src_dir))
+unlink(stage_root, recursive = TRUE, force = TRUE)
+dir.create(stage_report, showWarnings = FALSE, recursive = TRUE)
+file.copy(list.files(template_src_dir, full.names = TRUE, all.files = TRUE,
+                     no.. = TRUE),
+          stage_report, recursive = TRUE)
+version_src <- file.path(dirname(template_src_dir), "VERSION")
+if (file.exists(version_src)) {
+  file.copy(version_src, file.path(stage_root, "VERSION"), overwrite = TRUE)
+}
+template_abs <- normalizePath(file.path(stage_report, basename(template_src)),
+                              winslash = "/", mustWork = TRUE)
 
 # Snakemake's `@config` is the merged configuration (base configfile + any
 # `--configfile` overrides + `--config` flags). Write it to a temp YAML so the
@@ -106,5 +127,7 @@ if ("pdf" %in% formats) {
             conditionMessage(e))
   })
 }
+
+unlink(stage_root, recursive = TRUE, force = TRUE)
 
 invisible(NULL)
