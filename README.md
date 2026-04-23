@@ -1,10 +1,10 @@
 # Bulk RNA-seq Analysis Analyzer Workflow
 
-[![Smoke test](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/test.yml/badge.svg)](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/test.yml)
-[![Docker](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml/badge.svg)](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml)
+[![Smoke test](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/test.yml/badge.svg)](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/test.yml)
+[![Docker](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/docker.yml/badge.svg)](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/rnaseq-report-MMB/blob/main/notebooks/colab_pipeline.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/BulkRNAseq-Analyzer/blob/main/notebooks/colab_pipeline.ipynb)
 [![run with conda](https://img.shields.io/badge/run%20with-conda-44A833?logo=anaconda&logoColor=white)](https://docs.conda.io)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 [![run with jupyter](https://img.shields.io/badge/run%20with-jupyter-F37626?logo=jupyter&logoColor=white)](https://jupyter.org)
@@ -25,7 +25,7 @@ You need two outputs from a prior nf-core/rnaseq run:
 - `multiqc_data/` — MultiQC raw data directory (**not** `multiqc_report.html`)
 
 ### Run in Colab
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/rnaseq-report-MMB/blob/main/notebooks/colab_pipeline.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/BulkRNAseq-Analyzer/blob/main/notebooks/colab_pipeline.ipynb)
 
 ### Run locally (native)
 Place the input data under the project directory and supply the exact paths at the `init` step.

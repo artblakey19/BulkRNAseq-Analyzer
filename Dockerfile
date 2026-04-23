@@ -82,6 +82,7 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
 WORKDIR /app
 COPY --chown=$MAMBA_USER:$MAMBA_USER workflow ./workflow
 COPY --chown=$MAMBA_USER:$MAMBA_USER report   ./report
+COPY --chown=$MAMBA_USER:$MAMBA_USER config/config.template.yaml ./config/config.template.yaml
 
 # Install entrypoint + sub-command dispatch. entrypoint.sh runs as root (the
 # final USER below) so gosu can drop privileges to the host user derived

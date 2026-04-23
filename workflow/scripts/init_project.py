@@ -17,12 +17,15 @@ import yaml
 
 # PROJECT_ROOT env var lets the Docker wrapper point REPO_ROOT at the
 # bind-mounted /project instead of the baked-in /app, so relative counts
-# paths resolve against the host project dir.
+# paths resolve against the host project dir. The config template is a
+# pipeline asset that lives next to the script (/app in Docker, repo root
+# native), so it's resolved separately from REPO_ROOT.
 REPO_ROOT = Path(os.environ.get("PROJECT_ROOT") or Path(__file__).resolve().parents[2])
+SCRIPT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = REPO_ROOT / "config" / "config.yaml"
 DEFAULT_SAMPLES = REPO_ROOT / "config" / "samples.tsv"
 DEFAULT_CONTRASTS = REPO_ROOT / "config" / "contrasts.tsv"
-CONFIG_TEMPLATE = REPO_ROOT / "config" / "config.template.yaml"
+CONFIG_TEMPLATE = SCRIPT_ROOT / "config" / "config.template.yaml"
 
 
 def prompt(message: str, default: str | None = None) -> str:

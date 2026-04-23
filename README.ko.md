@@ -1,10 +1,10 @@
 # Bulk RNA-seq Analyzer Workflow
 
-[![Smoke test](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/test.yml/badge.svg)](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/test.yml)
-[![Docker](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml/badge.svg)](https://github.com/artblakey19/rnaseq-report-MMB/actions/workflows/docker.yml)
+[![Smoke test](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/test.yml/badge.svg)](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/test.yml)
+[![Docker](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/docker.yml/badge.svg)](https://github.com/artblakey19/BulkRNAseq-Analyzer/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/rnaseq-report-MMB/blob/main/notebooks/colab_pipeline.ko.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/BulkRNAseq-Analyzer/blob/main/notebooks/colab_pipeline.ko.ipynb)
 [![run with conda](https://img.shields.io/badge/run%20with-conda-44A833?logo=anaconda&logoColor=white)](https://docs.conda.io)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 [![run with jupyter](https://img.shields.io/badge/run%20with-jupyter-F37626?logo=jupyter&logoColor=white)](https://jupyter.org)
@@ -25,7 +25,7 @@ nf-core/rnaseq 분석 결과물 두 개가 필요:
 - `multiqc_data/` — MultiQC raw data 디렉터리 (`multiqc_report.html`이 **아님**)
 
 ### Colab에서 실행
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/rnaseq-report-MMB/blob/main/notebooks/colab_pipeline.ko.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/BulkRNAseq-Analyzer/blob/main/notebooks/colab_pipeline.ko.ipynb)
 
 ### 로컬 실행(네이티브)
 입력 데이터를 프로젝트 디렉토리 아래에 두고 `init` 단계에서 정확한 경로를 입력한다.
