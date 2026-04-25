@@ -61,7 +61,18 @@ suppressPackageStartupMessages({
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
 project_root <- normalizePath(params$project_root, mustWork = TRUE)
-config_path  <- normalizePath(params$config_path,  mustWork = TRUE)
+
+resolve_project_path <- function(path) {
+  if (is.null(path) || is.na(path) || !nzchar(path)) {
+    stop("Required path parameter is empty.")
+  }
+  if (!grepl("^(/|~|[A-Za-z]:[/\\\\])", path) && !file.exists(path)) {
+    path <- file.path(project_root, path)
+  }
+  normalizePath(path, winslash = "/", mustWork = TRUE)
+}
+
+config_path <- resolve_project_path(params$config_path)
 
 # All downstream paths are resolved relative to the project root.
 rp <- function(...) file.path(project_root, ...)
