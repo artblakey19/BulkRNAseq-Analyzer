@@ -180,19 +180,19 @@ dir.create(dirname(results_out), showWarnings = FALSE, recursive = TRUE)
 write.csv(out_df, file = results_out, row.names = FALSE)
 saveRDS(dds, file = rds_out)
 
-# --- DEG tier summary -----------------------------------------------------
-tier_counts <- function(df, padj_cut, lfc_cut) {
+# --- DEG cutoff summary ---------------------------------------------------
+cutoff_counts <- function(df, padj_cut, lfc_cut) {
   valid <- !is.na(df$padj) & !is.na(df$log2FoldChange)
   sig   <- valid & df$padj < padj_cut & abs(df$log2FoldChange) >= lfc_cut
   n_up   <- sum(sig & df$log2FoldChange > 0)
   n_down <- sum(sig & df$log2FoldChange < 0)
   c(n_up = n_up, n_down = n_down, n_total = n_up + n_down)
 }
-prim <- tier_counts(out_df, primary$padj,   primary$abs_lfc)
-sec  <- tier_counts(out_df, secondary$padj, secondary$abs_lfc)
+prim <- cutoff_counts(out_df, primary$padj,   primary$abs_lfc)
+sec  <- cutoff_counts(out_df, secondary$padj, secondary$abs_lfc)
 
 summary_df <- data.frame(
-  tier        = c("primary", "secondary"),
+  cutoff      = c("primary", "secondary"),
   padj_cutoff = c(primary$padj,    secondary$padj),
   lfc_cutoff  = c(primary$abs_lfc, secondary$abs_lfc),
   n_up        = c(prim[["n_up"]],    sec[["n_up"]]),

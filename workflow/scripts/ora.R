@@ -34,7 +34,7 @@ stopifnot(file.exists(de_path))
 empty_df <- data.frame(
   database = character(),
   direction = character(),
-  tier = character(),
+  cutoff = character(),
   ID = character(),
   Description = character(),
   GeneRatio = character(),
@@ -51,25 +51,25 @@ empty_df <- data.frame(
 de_res <- read.csv(de_path, stringsAsFactors = FALSE)
 de_res <- de_res[!is.na(de_res$padj) & !is.na(de_res$log2FoldChange), ]
 
-tier_used <- NA
+cutoff_used <- NA
 selected_genes <- data.frame()
 
 # Primary
 prim_pass <- de_res[de_res$padj < primary$padj & abs(de_res$log2FoldChange) >= primary$abs_lfc, ]
 if (nrow(prim_pass) >= min_genes) {
-  tier_used <- "primary"
+  cutoff_used <- "primary"
   selected_genes <- prim_pass
 } else {
   # Secondary
   sec_pass <- de_res[de_res$padj < secondary$padj & abs(de_res$log2FoldChange) >= secondary$abs_lfc, ]
   if (nrow(sec_pass) >= min_genes) {
-    tier_used <- "secondary"
+    cutoff_used <- "secondary"
     selected_genes <- sec_pass
   }
 }
 
-if (is.na(tier_used)) {
-  message(sprintf("Insufficient DEG: neither primary nor secondary tier yielded >= %d genes.", min_genes))
+if (is.na(cutoff_used)) {
+  message(sprintf("Insufficient DEG: neither primary nor secondary cutoff yielded >= %d genes.", min_genes))
   write.csv(empty_df, file = combined_out, row.names = FALSE)
   saveRDS(list(), file = rds_out)
   quit(save = "no", status = 0)
@@ -88,7 +88,7 @@ up_genes <- up_genes[!is.na(up_genes) & up_genes != ""]
 down_genes <- down_genes[!is.na(down_genes) & down_genes != ""]
 universe_genes <- de_res$gene_name[!is.na(de_res$gene_name) & de_res$gene_name != ""]
 
-message(sprintf("Using tier: %s. Up genes: %d, Down genes: %d", tier_used, length(up_genes), length(down_genes)))
+message(sprintf("Using cutoff: %s. Up genes: %d, Down genes: %d", cutoff_used, length(up_genes), length(down_genes)))
 
 # --- ORA Functions --------------------------------------------------------
 
@@ -160,7 +160,7 @@ for (db in databases) {
       df <- as.data.frame(res)
       df$database <- db
       df$direction <- dir
-      df$tier <- tier_used
+      df$cutoff <- cutoff_used
       all_res_dfs[[paste(db, dir, sep="_")]] <- df
     }
   }
@@ -174,7 +174,7 @@ if (length(all_res_dfs) > 0) {
   final_df <- dplyr::bind_rows(all_res_dfs)
   rownames(final_df) <- NULL
 
-  expected_cols <- c("database", "direction", "tier", "ID", "Description",
+  expected_cols <- c("database", "direction", "cutoff", "ID", "Description",
                      "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue",
                      "geneID", "Count")
   for (col in expected_cols) {

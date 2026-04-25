@@ -75,7 +75,7 @@ if (is.null(de_tbl) || nrow(de_tbl) == 0) {
     ggplot2::geom_hline(yintercept = -log10(prim_padj), linetype = "dashed",
                         colour = "grey40") +
     ggplot2::labs(x = "log2FoldChange (apeglm)", y = "-log10(pvalue)",
-                  colour = "tier") +
+                  colour = "cutoff") +
     ggplot2::theme_minimal(base_size = 12)
 
   if (is_html_report()) {

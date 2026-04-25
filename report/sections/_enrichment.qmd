@@ -124,7 +124,7 @@ ora_secondary <- ora_de_cfg$secondary %||% list(padj = 0.10, abs_lfc = 0.5)
 ora_min_genes <- ora_cfg$min_input_genes %||% 100
 ora_max_genes <- ora_cfg$max_input_genes %||% 500
 
-.ora_candidates <- function(de_tbl, tier_name, cutoff) {
+.ora_candidates <- function(de_tbl, cutoff_name, cutoff) {
   if (is.null(de_tbl) || nrow(de_tbl) == 0) return(de_tbl[0, , drop = FALSE])
   de_tbl |>
     dplyr::filter(
@@ -135,20 +135,20 @@ ora_max_genes <- ora_cfg$max_input_genes %||% 500
       !is.na(gene_name),
       nzchar(as.character(gene_name))
     ) |>
-    dplyr::mutate(tier = tier_name)
+    dplyr::mutate(cutoff = cutoff_name)
 }
 
 ora_input_genes <- NULL
-ora_input_tier <- NA_character_
+ora_input_cutoff <- NA_character_
 if (!is.null(de_for_ora) && nrow(de_for_ora) > 0) {
   prim_ora <- .ora_candidates(de_for_ora, "primary", ora_primary)
   sec_ora  <- .ora_candidates(de_for_ora, "secondary", ora_secondary)
   if (nrow(prim_ora) >= ora_min_genes) {
     ora_input_genes <- prim_ora
-    ora_input_tier <- "primary"
+    ora_input_cutoff <- "primary"
   } else if (nrow(sec_ora) >= ora_min_genes) {
     ora_input_genes <- sec_ora
-    ora_input_tier <- "secondary"
+    ora_input_cutoff <- "secondary"
   } else {
     ora_input_genes <- prim_ora[0, , drop = FALSE]
   }
@@ -172,7 +172,7 @@ if (!is.null(de_for_ora) && nrow(de_for_ora) > 0) {
       dplyr::mutate(input_rank = dplyr::row_number()) |>
       dplyr::ungroup() |>
       dplyr::select(dplyr::any_of(c(
-        "direction", "input_rank", "tier", "gene_id", "gene_name",
+        "direction", "input_rank", "cutoff", "gene_id", "gene_name",
         "log2FoldChange", "padj"
       )))
   }
@@ -189,15 +189,15 @@ if (!isTRUE(enrichment_enabled)) {
   cat("\n\n")
 } else if (is.null(ora_input_genes) || nrow(ora_input_genes) == 0) {
   cat(as.character(no_results(sprintf(
-    "No ORA input gene list selected: primary and secondary tiers both yielded fewer than %d genes.",
+    "No ORA input gene list selected: primary and secondary cutoffs both yielded fewer than %d genes.",
     ora_min_genes
   ))))
   cat("\n\n")
 } else {
   gene_counts <- table(factor(ora_input_genes$direction, levels = c("up", "down")))
   caption <- sprintf(
-    "ORA input genes: %s tier, %d total (%d up, %d down)",
-    ora_input_tier,
+    "ORA input genes: %s cutoff, %d total (%d up, %d down)",
+    ora_input_cutoff,
     nrow(ora_input_genes),
     as.integer(gene_counts[["up"]] %||% 0),
     as.integer(gene_counts[["down"]] %||% 0)
@@ -260,7 +260,7 @@ if (!isTRUE(enrichment_enabled)) {
       dplyr::arrange(p.adjust, .by_group = TRUE) |>
       dplyr::slice_head(n = 10) |>
       dplyr::ungroup() |>
-      dplyr::select(dplyr::any_of(c("direction", "tier", "ID",
+      dplyr::select(dplyr::any_of(c("direction", "cutoff", "ID",
                                     "Description", "GeneRatio", "BgRatio",
                                     "pvalue", "p.adjust", "qvalue", "Count")))
 
