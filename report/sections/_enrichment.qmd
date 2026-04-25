@@ -8,12 +8,13 @@ Per-contrast GSEA, ORA, TFEA (CollecTRI / ULM), and PROGENy pathway activity.
 Contrast별 GSEA, ORA, TFEA (CollecTRI / ULM), PROGENy pathway 활성도.
 :::
 
-```{r enr-child-template, include=FALSE}
+````{r enr-child-template, include=FALSE}
 enr_child_template <- r"---(
 ## `r cid`
 
 ### GSEA
 
+```{r enr-gsea, results='asis', fig.width=9, fig.height=8}
 gsea_path <- file.path(project_root, "results", "enrichment", cid, "gsea_combined.csv")
 gsea_all <- safe_read(gsea_path)
 
@@ -109,9 +110,11 @@ if (!isTRUE(enrichment_enabled)) {
     cat("\n\n:::\n\n")
   }
 }
+```
 
 ### ORA (supplementary)
 
+```{r enr-ora, results='asis', fig.width=9, fig.height=11}
 de_path <- file.path(project_root, "results", "de", cid, "deseq2_results.csv")
 de_for_ora <- safe_read(de_path)
 ora_de_cfg <- cfg$de %||% list()
@@ -315,9 +318,11 @@ if (!isTRUE(enrichment_enabled)) {
     cat("\n\n:::\n\n")
   }
 }
+```
 
 ### TFEA (CollecTRI, ULM)
 
+```{r enr-tf-activity, results='asis', fig.width=8, fig.height=9}
 tf_path <- file.path(project_root, "results", "tfea", cid, "tf_scores.tsv")
 tf <- safe_read(tf_path, sep = "\t")
 if (!isTRUE(tfea_enabled)) {
@@ -359,6 +364,7 @@ if (!isTRUE(tfea_enabled)) {
   cat(knitr::knit_print(dt))
   cat("\n\n")
 }
+```
 
 ### Pathway activity (PROGENy)
 
@@ -370,6 +376,7 @@ PROGENy scores are estimated per-sample pathway activity.
 PROGENy score는 샘플별 pathway 활성 추정치를 나타냄.
 :::
 
+```{r enr-progeny-heatmap, fig.width=8.5, fig.height=7}
 pw_path <- file.path(project_root, "results", "progeny", cid,
                      "progeny_scores.tsv")
 pw <- safe_read(pw_path, sep = "\t")
@@ -440,9 +447,11 @@ if (!isTRUE(progeny_enabled)) {
     )
   p
 }
+```
 
 #### Treated vs control delta (raw scale) + Wilcoxon p
 
+```{r enr-progeny-delta}
 if (!isTRUE(progeny_enabled)) {
   no_results("PROGENy stage disabled in config.yaml.")
 } else if (is.null(pw) || nrow(pw) == 0 || ncol(pw) < 2 ||
@@ -481,10 +490,11 @@ if (!isTRUE(progeny_enabled)) {
   )
   dt
 }
+```
 
 
 )---"
-```
+````
 
 ```{r enr-render, results='asis'}
 if (nrow(contrasts) == 0) {
