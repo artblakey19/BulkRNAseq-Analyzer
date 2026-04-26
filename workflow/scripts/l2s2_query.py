@@ -51,12 +51,6 @@ query PairEnrichmentQuery(
         approved
         countSignificant
       }
-      moas {
-        drug
-        oddsRatio
-        pvalue
-        adjPvalue
-      }
     }
   }
 }
@@ -164,13 +158,6 @@ def parse_results(response: dict[str, Any], logger: logging.Logger) -> list[dict
     bg = data.get("currentBackground") or {}
     paired = bg.get("pairedEnrich") or {}
     consensus = paired.get("consensus") or []
-    moas_list = paired.get("moas") or []
-
-    moa_by_drug: dict[str, str] = {}
-    for entry in moas_list:
-        drug = (entry or {}).get("drug")
-        if drug and drug not in moa_by_drug:
-            moa_by_drug[drug] = str(entry.get("drug", ""))
 
     consensus_sorted = sorted(
         consensus,
@@ -217,17 +204,6 @@ def main() -> None:
     params = sm.params
     top_up = int(params["top_up"])
     top_down = int(params["top_down"])
-    service = str(params.get("service", "l2s2"))
-
-    if service != "l2s2":
-        logger.error("unsupported service '%s'; only 'l2s2' is implemented", service)
-        _write_empty(out_path)
-        return
-
-    if not Path(de_csv).is_file():
-        logger.error("DE CSV not found: %s", de_csv)
-        _write_empty(out_path)
-        return
 
     endpoint = os.environ.get("L2S2_API_URL", DEFAULT_ENDPOINT)
     logger.info("L2S2 endpoint: %s", endpoint)

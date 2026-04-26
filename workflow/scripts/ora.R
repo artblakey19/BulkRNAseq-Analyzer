@@ -12,24 +12,15 @@ suppressPackageStartupMessages({
 set.seed(42)
 
 # --- Inputs / outputs / params --------------------------------------------
-de_path <- snakemake@input[["de"]]
-combined_out <- snakemake@output[["combined"]]
-if (is.null(combined_out)) {
-  combined_out <- snakemake@output[["table"]]
-}
-rds_out <- snakemake@output[["rds"]]
+de_path      <- snakemake@input[["de"]]
+combined_out <- snakemake@output[["table"]]
+rds_out      <- snakemake@output[["rds"]]
 
-primary <- snakemake@params[["primary"]]
+primary   <- snakemake@params[["primary"]]
 secondary <- snakemake@params[["secondary"]]
 min_genes <- snakemake@params[["min_input_genes"]]
 max_genes <- snakemake@params[["max_input_genes"]]
-
 databases <- snakemake@params[["databases"]]
-if (is.null(databases)) {
-  databases <- snakemake@params[["database"]]
-}
-
-stopifnot(file.exists(de_path))
 
 empty_df <- data.frame(
   database = character(),

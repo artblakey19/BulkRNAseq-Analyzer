@@ -6,7 +6,6 @@ rule cmap:
     params:
         top_up = config["cmap"]["top_up"],
         top_down = config["cmap"]["top_down"],
-        service = config["cmap"]["service"],
     log:
         "logs/cmap/{contrast}.log",
     conda:

@@ -9,7 +9,7 @@ rule qc:
     log:
         "logs/qc/qc_summary.log",
     conda:
-        "../envs/r-tidyverse.yaml"
+        "../envs/r-qc.yaml"
     script:
         "../scripts/qc.R"
 

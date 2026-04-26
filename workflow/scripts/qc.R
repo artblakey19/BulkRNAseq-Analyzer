@@ -17,9 +17,6 @@ multiqc_dir  <- snakemake@params[["multiqc_dir"]]
 samples_path <- snakemake@input[["samples"]]
 out_path     <- snakemake@output[["summary"]]
 
-stopifnot(file.exists(counts_path))
-stopifnot(file.exists(samples_path))
-
 REQUIRED_COLS <- c(
   "sample", "condition", "replicate", "batch",
   "total_reads", "mapping_rate", "uniquely_mapped_pct",
@@ -31,21 +28,8 @@ REQUIRED_COLS <- c(
 )
 
 samples <- read_tsv(samples_path, show_col_types = FALSE)
-stopifnot("sample" %in% names(samples))
-for (col in c("condition", "replicate", "batch")) {
-  if (!col %in% names(samples)) samples[[col]] <- NA
-}
 
 counts <- read_tsv(counts_path, show_col_types = FALSE)
-sample_cols <- setdiff(names(counts), c("gene_id", "gene_name"))
-
-missing_in_counts <- setdiff(samples$sample, sample_cols)
-if (length(missing_in_counts) > 0) {
-  stop(sprintf(
-    "qc_summary: samples in samples.tsv missing from counts matrix: %s",
-    paste(missing_in_counts, collapse = ", ")
-  ))
-}
 
 assigned_tbl <- tibble(
   sample = samples$sample,

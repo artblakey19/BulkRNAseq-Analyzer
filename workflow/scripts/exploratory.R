@@ -17,42 +17,19 @@ set.seed(42)
 
 counts_path  <- snakemake@input[["counts"]]
 samples_path <- snakemake@input[["samples"]]
-stopifnot(file.exists(counts_path), file.exists(samples_path))
 
 samples <- read.table(samples_path, header = TRUE, sep = "\t",
                       stringsAsFactors = FALSE, check.names = FALSE)
-required <- c("sample", "condition", "replicate", "batch")
-miss <- setdiff(required, colnames(samples))
-if (length(miss) > 0) {
-  stop("samples.tsv missing required columns: ", paste(miss, collapse = ", "))
-}
 
 counts_raw <- read.table(counts_path, header = TRUE, sep = "\t",
                          stringsAsFactors = FALSE, check.names = FALSE)
-if (ncol(counts_raw) < 3) {
-  stop("counts TSV must contain gene_id, gene_name, and >=1 sample column")
-}
 gene_ids   <- as.character(counts_raw[[1]])
 gene_names <- as.character(counts_raw[[2]])
 
 counts_mat <- round(as.matrix(counts_raw[, -c(1, 2), drop = FALSE]))
 mode(counts_mat) <- "integer"
 rownames(counts_mat) <- gene_ids
-
-count_samples <- colnames(counts_mat)
-sheet_samples <- samples$sample
-missing_in_counts <- setdiff(sheet_samples, count_samples)
-extra_in_counts   <- setdiff(count_samples, sheet_samples)
-if (length(missing_in_counts) > 0) {
-  stop("samples.tsv samples missing from counts TSV: ",
-       paste(missing_in_counts, collapse = ", "))
-}
-if (length(extra_in_counts) > 0) {
-  stop("counts TSV has samples not declared in samples.tsv: ",
-       paste(extra_in_counts, collapse = ", "))
-}
-
-counts_mat <- counts_mat[, sheet_samples, drop = FALSE]
+counts_mat <- counts_mat[, samples$sample, drop = FALSE]
 
 col_data <- data.frame(
   sample    = samples$sample,

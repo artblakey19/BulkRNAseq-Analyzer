@@ -7,15 +7,14 @@ tool, language, and conda env.
 Logic structure preserved from the original R implementation:
   1. log sink setup
   2. param defaults for missing values
-  3. method must be "ulm" (only mode supported)
-  4. read DE CSV, keep finite stat + non-empty gene_name
-  5. collapse duplicate gene_name by mean
-  6. empty-output helper: on any missing network / empty ULM result we write
+  3. read DE CSV, keep finite stat + non-empty gene_name
+  4. collapse duplicate gene_name by mean
+  5. empty-output helper: on any missing network / empty ULM result we write
      header-only TSVs and exit 0 (downstream report degrades gracefully)
-  7. fetch CollecTRI with error handling
-  8. run ULM with error handling
-  9. BH-adjusted p (padj_internal) used for ordering and top_n filter
- 10. top_n selection by abs(score) desc, ranked, with `rank` column
+  6. fetch CollecTRI with error handling
+  7. run ULM with error handling
+  8. BH-adjusted p (padj_internal) used for ordering and top_n filter
+  9. top_n selection by abs(score) desc, ranked, with `rank` column
 """
 import logging
 import sys
@@ -52,18 +51,11 @@ def _param(key, default):
     return default if val is None else val
 
 
-method = _param("method", "ulm")
 min_size = int(_param("min_size", 5))
 padj_cutoff = float(_param("padj_cutoff", 0.05))
 top_n = int(_param("top_n", 50))
 split_complexes = bool(_param("split_complexes", False))
 
-if method != "ulm":
-    raise ValueError(
-        f"Unsupported TF activity method: {method!r}. Only 'ulm' is supported."
-    )
-
-assert de_path.exists(), f"DE CSV not found: {de_path}"
 scores_out.parent.mkdir(parents=True, exist_ok=True)
 top_out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -211,7 +203,7 @@ if pval_df is not None and not pval_df.empty:
     scores["p_value"] = pval_df.iloc[0].reindex(scores["source"]).to_numpy()
 else:
     scores["p_value"] = np.nan
-scores["statistic"] = method
+scores["statistic"] = "ulm"
 
 scores["padj_internal"] = bh_adjust(scores["p_value"])
 

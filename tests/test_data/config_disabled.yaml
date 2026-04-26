@@ -16,7 +16,6 @@ input:
 
 de:
   prefilter_min_count: 10
-  prefilter_min_samples_mode: "smallest_group"
   lfc_shrink: "apeglm"
   primary:
     padj: 0.05
@@ -42,7 +41,6 @@ enrichment:
 
 tfea:
   enabled: false
-  method: "ulm"
   split_complexes: false
   min_size: 5
   padj_cutoff: 0.05
@@ -54,7 +52,6 @@ progeny:
 
 cmap:
   enabled: false
-  service: "l2s2"
   top_up: 250
   top_down: 250
 

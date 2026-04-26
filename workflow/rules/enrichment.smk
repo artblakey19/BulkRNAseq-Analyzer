@@ -49,7 +49,6 @@ rule tfea:
         scores = RESULTS / "tfea" / "{contrast}" / "tf_scores.tsv",
         top = RESULTS / "tfea" / "{contrast}" / "tf_top.tsv",
     params:
-        method = config["tfea"]["method"],
         min_size = config["tfea"]["min_size"],
         padj_cutoff = config["tfea"]["padj_cutoff"],
         top_n = config["tfea"]["top_n"],

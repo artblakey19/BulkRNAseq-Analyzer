@@ -33,7 +33,6 @@ SUPPORTED_CONFIG_SCHEMA: dict[str, Any] = {
     },
     "de": {
         "prefilter_min_count": None,
-        "prefilter_min_samples_mode": None,
         "lfc_shrink": None,
         "primary": {"padj": None, "abs_lfc": None},
         "secondary": {"padj": None, "abs_lfc": None},
@@ -55,7 +54,6 @@ SUPPORTED_CONFIG_SCHEMA: dict[str, Any] = {
     },
     "tfea": {
         "enabled": None,
-        "method": None,
         "split_complexes": None,
         "min_size": None,
         "padj_cutoff": None,
@@ -67,7 +65,6 @@ SUPPORTED_CONFIG_SCHEMA: dict[str, Any] = {
     },
     "cmap": {
         "enabled": None,
-        "service": None,
         "top_up": None,
         "top_down": None,
     },
@@ -222,7 +219,7 @@ def validate_config(
     _require_keys(
         config,
         "de",
-        ["prefilter_min_count", "prefilter_min_samples_mode", "lfc_shrink", "primary", "secondary"],
+        ["prefilter_min_count", "lfc_shrink", "primary", "secondary"],
         errors,
     )
     _require_nested_keys(config, ("de", "primary"), ["padj", "abs_lfc"], errors)
@@ -243,11 +240,11 @@ def validate_config(
     _require_keys(
         config,
         "tfea",
-        ["enabled", "method", "split_complexes", "min_size", "padj_cutoff", "top_n"],
+        ["enabled", "split_complexes", "min_size", "padj_cutoff", "top_n"],
         errors,
     )
     _require_keys(config, "progeny", ["enabled", "top_targets"], errors)
-    _require_keys(config, "cmap", ["enabled", "service", "top_up", "top_down"], errors)
+    _require_keys(config, "cmap", ["enabled", "top_up", "top_down"], errors)
     _require_keys(config, "report", ["formats"], errors)
     for section in ["enrichment", "tfea", "progeny", "cmap"]:
         _require_bool(config, section, "enabled", errors)
@@ -260,15 +257,8 @@ def validate_config(
         if bad_formats:
             errors.append(f"Unsupported report.formats values: {', '.join(bad_formats)}")
 
-    if config.get("de", {}).get("prefilter_min_samples_mode") != "smallest_group":
-        errors.append("de.prefilter_min_samples_mode must be 'smallest_group'.")
     if config.get("enrichment", {}).get("gsea", {}).get("ranking") not in {"stat", "signed_p"}:
         errors.append("enrichment.gsea.ranking must be 'stat' or 'signed_p'.")
-    if config.get("tfea", {}).get("method") != "ulm":
-        errors.append("tfea.method must be 'ulm'.")
-    if config.get("cmap", {}).get("service") != "l2s2":
-        errors.append("cmap.service must be 'l2s2'.")
-
     missing_sample_cols = [c for c in REQUIRED_SAMPLE_COLUMNS if c not in samples.columns]
     extra_sample_cols = [c for c in samples.columns if c not in REQUIRED_SAMPLE_COLUMNS]
     if missing_sample_cols:

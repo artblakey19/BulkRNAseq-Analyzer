@@ -6,7 +6,4 @@ dependencies:
   - bioconductor-deseq2
   - bioconductor-apeglm
   - bioconductor-summarizedexperiment
-  - r-tidyverse
   - r-matrixstats
-  - r-pheatmap
-  - r-ggrepel

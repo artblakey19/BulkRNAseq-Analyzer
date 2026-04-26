@@ -3,43 +3,25 @@ sink(log_con, type = "message")
 sink(log_con, type = "output")
 
 suppressPackageStartupMessages({
-  library(readr)
   library(dplyr)
-  library(tidyr)
   library(fgsea)
   library(msigdbr)
-  library(stringr)
   library(data.table)
 })
 
 # --- Params ---------------------------------------------------------------
 seed     <- snakemake@params[["seed"]]
-if (is.null(seed)) seed <- 42
 set.seed(seed)
 
 ranking  <- snakemake@params[["ranking"]]
 min_size <- snakemake@params[["min_size"]]
 max_size <- snakemake@params[["max_size"]]
-
-if (is.null(ranking)) ranking <- "stat"
-if (is.null(min_size)) min_size <- 15
-if (is.null(max_size)) max_size <- 500
-
-# Handle collection or collections
-colls <- snakemake@params[["collections"]]
-if (is.null(colls)) {
-  colls <- snakemake@params[["collection"]]
-}
-if (is.null(colls) || length(colls) == 0) {
-  stop("Either 'collection' or 'collections' must be provided in snakemake params.")
-}
+colls    <- snakemake@params[["collections"]]
 
 # --- Input / Output -------------------------------------------------------
 de_path    <- snakemake@input[["de"]]
 table_out  <- snakemake@output[["table"]]
 rds_out    <- snakemake@output[["rds"]]
-
-stopifnot(file.exists(de_path))
 
 # --- Load DE Results ------------------------------------------------------
 de_res <- read.csv(de_path, header = TRUE, stringsAsFactors = FALSE)

@@ -62,20 +62,18 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
         texlive-core \
         r-base=4.3 \
         r-irkernel \
-        r-tidyverse \
         r-rmarkdown \
         r-knitr \
         r-quarto \
         r-dplyr \
         r-tidyr \
+        r-tibble \
         r-ggplot2 \
         r-scales \
         r-dt \
         r-plotly \
         r-htmltools \
         r-matrixstats \
-        r-pheatmap \
-        r-ggrepel \
         r-yaml \
         r-readr \
         r-msigdbr \
@@ -85,9 +83,7 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
         bioconductor-summarizedexperiment \
         bioconductor-fgsea \
         bioconductor-clusterprofiler \
-        bioconductor-enrichplot \
         bioconductor-org.hs.eg.db \
-        bioconductor-complexheatmap \
  && micromamba clean --all --yes
 
 # Bake the pipeline source into the image. Config and data stay on the host

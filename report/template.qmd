@@ -286,9 +286,8 @@ pw_cfg   <- cfg$progeny %||% list()
 dr_cfg   <- cfg$cmap    %||% list()
 
 cat("| Setting | Value |\n|---|---|\n")
-cat(sprintf("| DE prefilter (min count / mode) | %s / %s |\n",
-            de_cfg$prefilter_min_count %||% "—",
-            de_cfg$prefilter_min_samples_mode %||% "—"))
+cat(sprintf("| DE prefilter (min count) | %s |\n",
+            de_cfg$prefilter_min_count %||% "—"))
 cat(sprintf("| DE LFC shrink | %s |\n", de_cfg$lfc_shrink %||% "—"))
 cat(sprintf("| Enrichment enabled | %s |\n", cfg$enrichment$enabled %||% "—"))
 cat(sprintf("| TFEA enabled | %s |\n", cfg$tfea$enabled %||% "—"))
@@ -313,13 +312,11 @@ cat(sprintf("| GSEA collections | %s |\n",
             paste(vapply(gsea_cfg$collections %||% list(),
                          function(c) c$label %||% c$id, character(1)),
                   collapse = ", ")))
-cat(sprintf("| TFEA (method / min_size / top_n) | %s / %s / %s |\n",
-            tf_cfg$method %||% "—",
+cat(sprintf("| TFEA (min_size / top_n) | %s / %s |\n",
             tf_cfg$min_size %||% "—",
             tf_cfg$top_n %||% "—"))
 cat(sprintf("| PROGENy top targets | %s |\n", pw_cfg$top_targets %||% "—"))
-cat(sprintf("| cMap (service / top_up / top_down) | %s / %s / %s |\n",
-            dr_cfg$service %||% "—",
+cat(sprintf("| cMap (top_up / top_down) | %s / %s |\n",
             dr_cfg$top_up  %||% "—",
             dr_cfg$top_down %||% "—"))
 cat("\n")

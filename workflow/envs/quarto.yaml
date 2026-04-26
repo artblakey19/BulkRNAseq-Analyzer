@@ -8,10 +8,10 @@ dependencies:
   - r-rmarkdown
   - r-knitr
   - r-quarto
-  - r-tidyverse
   - r-readr
   - r-dplyr
   - r-tidyr
+  - r-tibble
   - r-ggplot2
   - r-scales
   - r-dt

@@ -1,12 +1,7 @@
-# B3: DESeq2 DE analysis per contrast, with apeglm-shrunken log2FoldChange.
-# I/O is driven entirely by snakemake@input/@output/@params; no hardcoded paths,
-# no grepl("Control") — reference level is taken from contrasts.tsv `denominator`.
-#
-# Input provenance: counts come from nf-core/rnaseq's
-# `salmon.merged.gene_counts_length_scaled.tsv`, which is the output of an
-# upstream tximport(countsFromAbundance="lengthScaledTPM") run. Effective-length
-# correction is therefore already applied; we do NOT re-run tximport here.
-# The round() below follows DESeq2 guidance for length-scaled integer input.
+# DESeq2 DE analysis per contrast, with apeglm-shrunken log2FoldChange.
+# I/O is driven entirely by snakemake@input/@output/@params;
+# Reference level is taken from contrasts.tsv `denominator`.
+# Input: counts from `salmon.merged.gene_counts_length_scaled.tsv`
 
 log_con <- file(snakemake@log[[1]], open = "wt")
 sink(log_con, type = "message")
@@ -28,28 +23,15 @@ results_out <- snakemake@output[["results"]]
 rds_out     <- snakemake@output[["rds"]]
 summary_out <- snakemake@output[["summary"]]
 
-contrast_id                <- snakemake@params[["contrast_id"]]
-prefilter_min_count        <- snakemake@params[["prefilter_min_count"]]
-prefilter_min_samples_mode <- snakemake@params[["prefilter_min_samples_mode"]]
-lfc_shrink_type            <- snakemake@params[["lfc_shrink"]]
-primary                    <- snakemake@params[["primary"]]
-secondary                  <- snakemake@params[["secondary"]]
-
-stopifnot(file.exists(counts_path),
-          file.exists(samples_path),
-          file.exists(contrasts_path))
-
-if (!identical(prefilter_min_samples_mode, "smallest_group")) {
-  stop(sprintf("Unsupported prefilter_min_samples_mode: '%s' (only 'smallest_group' supported)",
-               prefilter_min_samples_mode))
-}
+contrast_id         <- snakemake@params[["contrast_id"]]
+prefilter_min_count <- snakemake@params[["prefilter_min_count"]]
+lfc_shrink_type     <- snakemake@params[["lfc_shrink"]]
+primary             <- snakemake@params[["primary"]]
+secondary           <- snakemake@params[["secondary"]]
 
 # --- Contrast row ---------------------------------------------------------
 contrasts_df <- read.table(contrasts_path, header = TRUE, sep = "\t",
                            stringsAsFactors = FALSE, check.names = FALSE)
-if (!contrast_id %in% contrasts_df$contrast_id) {
-  stop(sprintf("contrast_id '%s' not found in %s", contrast_id, contrasts_path))
-}
 crow <- contrasts_df[contrasts_df$contrast_id == contrast_id, , drop = FALSE]
 numerator   <- as.character(crow$numerator[1])
 denominator <- as.character(crow$denominator[1])
@@ -57,35 +39,13 @@ denominator <- as.character(crow$denominator[1])
 # --- Samples --------------------------------------------------------------
 samples_df <- read.table(samples_path, header = TRUE, sep = "\t",
                          stringsAsFactors = FALSE, check.names = FALSE)
-required_cols <- c("sample", "condition", "replicate", "batch")
-missing_cols <- setdiff(required_cols, colnames(samples_df))
-if (length(missing_cols) > 0) {
-  stop(sprintf("samples.tsv missing required columns: %s",
-               paste(missing_cols, collapse = ", ")))
-}
-if (!numerator %in% samples_df$condition) {
-  stop(sprintf("numerator '%s' not present in samples.tsv condition column", numerator))
-}
-if (!denominator %in% samples_df$condition) {
-  stop(sprintf("denominator '%s' not present in samples.tsv condition column", denominator))
-}
 
 # --- Counts ---------------------------------------------------------------
 counts_raw <- read.table(counts_path, header = TRUE, sep = "\t",
                          stringsAsFactors = FALSE, check.names = FALSE)
-if (!all(c("gene_id", "gene_name") == colnames(counts_raw)[1:2])) {
-  stop("counts TSV must have first two columns named 'gene_id' and 'gene_name'")
-}
 gene_id_all   <- counts_raw[["gene_id"]]
 gene_name_all <- counts_raw[["gene_name"]]
 names(gene_name_all) <- gene_id_all
-count_sample_cols <- setdiff(colnames(counts_raw), c("gene_id", "gene_name"))
-
-missing_samples <- setdiff(samples_df$sample, count_sample_cols)
-if (length(missing_samples) > 0) {
-  stop(sprintf("Samples in samples.tsv not found in counts TSV: %s",
-               paste(missing_samples, collapse = ", ")))
-}
 
 count_matrix <- as.matrix(counts_raw[, samples_df$sample, drop = FALSE])
 rownames(count_matrix) <- gene_id_all
