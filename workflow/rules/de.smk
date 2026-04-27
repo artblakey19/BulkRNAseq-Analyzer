@@ -10,7 +10,6 @@ rule deseq2:
     params:
         contrast_id = "{contrast}",
         prefilter_min_count = config["de"]["prefilter_min_count"],
-        lfc_shrink = config["de"]["lfc_shrink"],
         primary = config["de"]["primary"],
         secondary = config["de"]["secondary"],
     log:

@@ -23,18 +23,18 @@ results_out <- snakemake@output[["results"]]
 rds_out     <- snakemake@output[["rds"]]
 summary_out <- snakemake@output[["summary"]]
 
-contrast_id         <- snakemake@params[["contrast_id"]]
+target_contrast     <- snakemake@params[["contrast_id"]]
 prefilter_min_count <- snakemake@params[["prefilter_min_count"]]
-lfc_shrink_type     <- snakemake@params[["lfc_shrink"]]
 primary             <- snakemake@params[["primary"]]
 secondary           <- snakemake@params[["secondary"]]
 
 # --- Contrast row ---------------------------------------------------------
 contrasts_df <- read.table(contrasts_path, header = TRUE, sep = "\t",
                            stringsAsFactors = FALSE, check.names = FALSE)
-crow <- contrasts_df[contrasts_df$contrast_id == contrast_id, , drop = FALSE]
-numerator   <- as.character(crow$numerator[1])
-denominator <- as.character(crow$denominator[1])
+contrast_row <- contrasts_df[contrasts_df$contrast_id == target_contrast,
+                             , drop = FALSE]
+numerator   <- as.character(contrast_row$numerator[1])
+denominator <- as.character(contrast_row$denominator[1])
 
 # --- Samples --------------------------------------------------------------
 samples_df <- read.table(samples_path, header = TRUE, sep = "\t",
@@ -114,7 +114,7 @@ if (!(coef_name %in% res_names)) {
                coef_name, paste(res_names, collapse = ", ")))
 }
 
-res_shrunk <- lfcShrink(dds, coef = coef_name, type = lfc_shrink_type)
+res_shrunk <- lfcShrink(dds, coef = coef_name, type = "apeglm")
 res_wald   <- results(dds, name = coef_name)
 
 # apeglm does not return a `stat` column; use the Wald test statistic from
@@ -163,4 +163,4 @@ summary_df <- data.frame(
 write.table(summary_df, file = summary_out, sep = "\t",
             quote = FALSE, row.names = FALSE)
 
-message("DESeq2 analysis complete for contrast: ", contrast_id)
+message("DESeq2 analysis complete for contrast: ", target_contrast)

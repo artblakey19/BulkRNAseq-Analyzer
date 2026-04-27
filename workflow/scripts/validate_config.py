@@ -33,7 +33,6 @@ SUPPORTED_CONFIG_SCHEMA: dict[str, Any] = {
     },
     "de": {
         "prefilter_min_count": None,
-        "lfc_shrink": None,
         "primary": {"padj": None, "abs_lfc": None},
         "secondary": {"padj": None, "abs_lfc": None},
     },
@@ -219,7 +218,7 @@ def validate_config(
     _require_keys(
         config,
         "de",
-        ["prefilter_min_count", "lfc_shrink", "primary", "secondary"],
+        ["prefilter_min_count", "primary", "secondary"],
         errors,
     )
     _require_nested_keys(config, ("de", "primary"), ["padj", "abs_lfc"], errors)

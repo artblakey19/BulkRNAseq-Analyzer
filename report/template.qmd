@@ -288,7 +288,6 @@ dr_cfg   <- cfg$cmap    %||% list()
 cat("| Setting | Value |\n|---|---|\n")
 cat(sprintf("| DE prefilter (min count) | %s |\n",
             de_cfg$prefilter_min_count %||% "—"))
-cat(sprintf("| DE LFC shrink | %s |\n", de_cfg$lfc_shrink %||% "—"))
 cat(sprintf("| Enrichment enabled | %s |\n", cfg$enrichment$enabled %||% "—"))
 cat(sprintf("| TFEA enabled | %s |\n", cfg$tfea$enabled %||% "—"))
 cat(sprintf("| PROGENy enabled | %s |\n", cfg$progeny$enabled %||% "—"))

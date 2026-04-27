@@ -14,7 +14,6 @@ input:
   contrasts_tsv: config/contrasts.tsv
 de:
   prefilter_min_count: 10
-  lfc_shrink: apeglm
   primary:
     padj: 0.05
     abs_lfc: 1.0
