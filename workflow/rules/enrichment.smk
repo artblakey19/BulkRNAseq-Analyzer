@@ -7,13 +7,9 @@ rule gsea:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
     output:
         table = RESULTS / "enrichment" / "{contrast}" / "gsea_combined.csv",
-        rds = RESULTS / "enrichment" / "{contrast}" / "gsea_combined.rds",
     params:
         collections = GSEA_COLLECTION_IDS,
         ranking = config["enrichment"]["gsea"]["ranking"],
-        min_size = config["enrichment"]["gsea"]["min_size"],
-        max_size = config["enrichment"]["gsea"]["max_size"],
-        seed = config["enrichment"]["gsea"]["seed"],
     log:
         "logs/enrichment/{contrast}_gsea.log",
     conda:
@@ -27,7 +23,6 @@ rule ora:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
     output:
         table = RESULTS / "enrichment" / "{contrast}" / "ora_combined.csv",
-        rds = RESULTS / "enrichment" / "{contrast}" / "ora_combined.rds",
     params:
         databases = ORA_DATABASE_IDS,
         primary = config["de"]["primary"],

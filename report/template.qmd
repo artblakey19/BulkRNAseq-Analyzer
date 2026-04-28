@@ -300,11 +300,8 @@ cat(sprintf("| ORA databases | %s |\n",
             paste(vapply(ora_cfg$databases %||% list(),
                          function(d) d$label %||% d$id, character(1)),
                   collapse = ", ")))
-cat(sprintf("| GSEA ranking / min / max / seed | %s / %s / %s / %s |\n",
-            gsea_cfg$ranking %||% "—",
-            gsea_cfg$min_size %||% "—",
-            gsea_cfg$max_size %||% "—",
-            gsea_cfg$seed %||% "—"))
+cat(sprintf("| GSEA ranking | %s |\n",
+            gsea_cfg$ranking %||% "—"))
 cat(sprintf("| GSEA collections | %s |\n",
             paste(vapply(gsea_cfg$collections %||% list(),
                          function(c) c$label %||% c$id, character(1)),

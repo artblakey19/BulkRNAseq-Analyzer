@@ -26,9 +26,6 @@ enrichment:
   enabled: false
   gsea:
     ranking: "stat"
-    min_size: 15
-    max_size: 500
-    seed: 42
     collections:
       - {id: H, label: Hallmark}
   ora:

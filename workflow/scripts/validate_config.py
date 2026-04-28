@@ -39,9 +39,6 @@ SUPPORTED_CONFIG_SCHEMA: dict[str, Any] = {
         "enabled": None,
         "gsea": {
             "ranking": None,
-            "min_size": None,
-            "max_size": None,
-            "seed": None,
             "collections": [{"id": None, "label": None}],
         },
         "ora": {
@@ -226,7 +223,7 @@ def validate_config(
     _require_nested_keys(
         config,
         ("enrichment", "gsea"),
-        ["ranking", "min_size", "max_size", "seed", "collections"],
+        ["ranking", "collections"],
         errors,
     )
     _require_nested_keys(

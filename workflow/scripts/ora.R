@@ -14,7 +14,6 @@ set.seed(42)
 # --- Inputs / outputs / params --------------------------------------------
 de_path      <- snakemake@input[["de"]]
 combined_out <- snakemake@output[["table"]]
-rds_out      <- snakemake@output[["rds"]]
 
 primary   <- snakemake@params[["primary"]]
 secondary <- snakemake@params[["secondary"]]
@@ -62,7 +61,6 @@ if (nrow(prim_pass) >= min_genes) {
 if (is.na(cutoff_used)) {
   message(sprintf("Insufficient DEG: neither primary nor secondary cutoff yielded >= %d genes.", min_genes))
   write.csv(empty_df, file = combined_out, row.names = FALSE)
-  saveRDS(list(), file = rds_out)
   quit(save = "no", status = 0)
 }
 
@@ -85,20 +83,12 @@ message(sprintf("Using cutoff: %s. Up genes: %d, Down genes: %d", cutoff_used, l
 
 run_msigdbr_ora <- function(genes, universe, collection, subcollection = NULL) {
   if (length(genes) == 0) return(NULL)
-  # msigdbr >= 10.0.0 uses `collection`/`subcollection`; older versions use
-  # `category`/`subcategory`. Try new API first, fall back on older installs.
-  m_df <- tryCatch(
-    msigdbr(species = "Homo sapiens",
-            collection = collection,
-            subcollection = subcollection),
-    error = function(e) msigdbr(species = "Homo sapiens",
-                                category = collection,
-                                subcategory = subcollection)
-  )
+  m_df <- msigdbr(species = "Homo sapiens",
+                  collection = collection,
+                  subcollection = subcollection)
   m_t2g <- dplyr::select(m_df, gs_name, gene_symbol)
-  res <- enricher(gene = genes, TERM2GENE = m_t2g, universe = universe,
-                  pvalueCutoff = 1, qvalueCutoff = 1)
-  return(res)
+  enricher(gene = genes, TERM2GENE = m_t2g, universe = universe,
+           pvalueCutoff = 1, qvalueCutoff = 1)
 }
 
 run_kegg_ora <- function(genes_symbol, universe_symbol) {
@@ -121,17 +111,15 @@ run_kegg_ora <- function(genes_symbol, universe_symbol) {
 
 # --- Execute ORA ----------------------------------------------------------
 
-res_list <- list()
 all_res_dfs <- list()
 
 for (db in databases) {
-  res_list[[db]] <- list()
   for (dir in c("up", "down")) {
     genes <- if (dir == "up") up_genes else down_genes
     if (length(genes) == 0) next
-    
+
     message(sprintf("Running ORA for %s (%s, n=%d)", db, dir, length(genes)))
-    
+
     res <- NULL
     if (db == "GO_BP") {
       res <- run_msigdbr_ora(genes, universe_genes, collection = "C5", subcollection = "GO:BP")
@@ -144,24 +132,20 @@ for (db in databases) {
     } else {
       message("Unknown database: ", db)
     }
-    
-    res_list[[db]][[dir]] <- res
-    
+
     if (!is.null(res) && nrow(as.data.frame(res)) > 0) {
       df <- as.data.frame(res)
       df$database <- db
       df$direction <- dir
       df$cutoff <- cutoff_used
-      all_res_dfs[[paste(db, dir, sep="_")]] <- df
+      all_res_dfs[[paste(db, dir, sep = "_")]] <- df
     }
   }
 }
 
 if (length(all_res_dfs) > 0) {
-  # dplyr::bind_rows tolerates differing column sets (fills missing cols with
-  # NA), which rbind does not — enrichKEGG and enricher sometimes return
-  # slightly different columns (e.g. `geneID` present in one but not another
-  # when a result has zero rows).
+  # bind_rows tolerates differing column sets — enrichKEGG / enricher can
+  # return slightly different columns (e.g. geneID absent on zero-row results).
   final_df <- dplyr::bind_rows(all_res_dfs)
   rownames(final_df) <- NULL
 
@@ -169,9 +153,7 @@ if (length(all_res_dfs) > 0) {
                      "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue",
                      "geneID", "Count")
   for (col in expected_cols) {
-    if (!col %in% colnames(final_df)) {
-      final_df[[col]] <- NA
-    }
+    if (!col %in% colnames(final_df)) final_df[[col]] <- NA
   }
   final_df <- final_df[, expected_cols]
 } else {
@@ -179,6 +161,5 @@ if (length(all_res_dfs) > 0) {
 }
 
 write.csv(final_df, file = combined_out, row.names = FALSE)
-saveRDS(res_list, file = rds_out)
 
 message("ORA analysis complete.")
