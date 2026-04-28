@@ -187,11 +187,14 @@ def collect_sample_table(sample_ids: list[str]) -> list[dict]:
 
     print(dedent("""
         For each sample, enter condition, replicate number, batch.
-        Tip: press Enter on condition to reuse the previous sample's condition.
+        Tip: press Enter on condition or batch to reuse the previous sample's value.
+        Batch: keep the same value across all samples if you don't have batch
+        information — DESeq2 will then skip batch correction.
     """).strip())
 
     rows: list[dict] = []
     prev_condition: str | None = None
+    prev_batch: str | None = None
     replicate_counter: dict[str, int] = {}
     for sid in sample_ids:
         print(f"\n  [{sid}]")
@@ -200,9 +203,22 @@ def collect_sample_table(sample_ids: list[str]) -> list[dict]:
         prev_condition = condition
         replicate_counter[condition] = replicate_counter.get(condition, 0) + 1
         replicate = prompt("    replicate", default=str(replicate_counter[condition]))
-        batch = prompt("    batch", default="1")
+        batch = prompt("    batch", default=prev_batch or "1")
+        prev_batch = batch
         rows.append(
             {"sample": sid, "condition": condition, "replicate": replicate, "batch": batch}
+        )
+
+    distinct_batches = {r["batch"] for r in rows if r["batch"]}
+    if len(distinct_batches) < 2:
+        print(
+            "\n  Note: only one distinct batch value across samples → "
+            "DESeq2 will use design '~ condition' (no batch correction)."
+        )
+    else:
+        print(
+            f"\n  Note: {len(distinct_batches)} distinct batch values detected → "
+            "DESeq2 will use design '~ batch + condition'."
         )
     return rows
 

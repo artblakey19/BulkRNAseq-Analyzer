@@ -1,11 +1,13 @@
 # Exploratory analysis
 
 ::: {.lang-en}
-VST-normalised counts (blind = TRUE); using the top 500 most-variable genes.
+VST-normalised counts (blind = TRUE). PCA uses the top 500 most-variable genes;
+sample distances use all genes (Euclidean).
 :::
 
 ::: {.lang-ko}
-VST 정규화 카운트(blind = TRUE); variable 상위 500개 유전자를 사용.
+VST 정규화 카운트(blind = TRUE). PCA는 variable 상위 500개 유전자를 사용,
+샘플 거리는 전체 유전자에 Euclidean 거리.
 :::
 
 ```{r expl-load}
@@ -64,26 +66,26 @@ if (is.null(pca_obj) || is.null(pca_obj$var_explained) || length(pca_obj$var_exp
 }
 ```
 
-## Sample correlation
+## Sample distance
 
-```{r expl-corheat, fig.width=7.5, fig.height=6.5}
-if (is.null(cor_obj) || is.null(cor_obj$spearman)) {
-  no_results("Sample correlation matrix not available.")
+```{r expl-distheat, fig.width=7.5, fig.height=6.5}
+if (is.null(cor_obj) || is.null(cor_obj$dist)) {
+  no_results("Sample distance matrix not available.")
 } else {
-  M <- cor_obj$spearman
+  M <- cor_obj$dist
   ord <- if (!is.null(cor_obj$hclust)) cor_obj$hclust$order else seq_len(nrow(M))
   M <- M[ord, ord, drop = FALSE]
   df <- as.data.frame(as.table(M))
-  names(df) <- c("sample_x", "sample_y", "rho")
+  names(df) <- c("sample_x", "sample_y", "distance")
   df$sample_x <- factor(df$sample_x, levels = rownames(M))
   df$sample_y <- factor(df$sample_y, levels = rownames(M))
-  p <- ggplot2::ggplot(df, ggplot2::aes(x = sample_x, y = sample_y, fill = rho)) +
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = sample_x, y = sample_y, fill = distance)) +
     ggplot2::geom_tile() +
-    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.3f", rho)),
+    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.1f", distance)),
                        size = 3, colour = "grey20") +
-    ggplot2::scale_fill_gradient(low = "#ffffff", high = "#4c7fb0",
-                                 limits = c(min(df$rho, na.rm = TRUE), 1)) +
-    ggplot2::labs(x = NULL, y = NULL, fill = expression(rho)) +
+    ggplot2::scale_fill_gradient(low = "#4c7fb0", high = "#ffffff",
+                                 limits = c(0, max(df$distance, na.rm = TRUE))) +
+    ggplot2::labs(x = NULL, y = NULL, fill = "distance") +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
@@ -93,7 +95,7 @@ if (is.null(cor_obj) || is.null(cor_obj$spearman)) {
 }
 ```
 
-## Hierarchical clustering (1 − Spearman, average linkage)
+## Hierarchical clustering (Euclidean, complete linkage)
 
 ```{r expl-dendro, fig.width=8, fig.height=4.5}
 if (is.null(cor_obj) || is.null(cor_obj$hclust)) {
