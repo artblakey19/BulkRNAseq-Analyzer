@@ -242,7 +242,7 @@ flowchart TD
 | **Gene set enrichment (GSEA)** | Identify gene sets coordinately perturbed across the full ranked list. | Pre-ranked GSEA on Wald statistic across selected MSigDB collections. | Normalized enrichment score and adjusted *p*-value per gene set. |
 | **Over-representation (ORA)** | Identify pathways enriched among the DEG shortlist. | Hypergeometric test against GO, KEGG, Reactome, and Hallmark databases. | Raw and adjusted *p*-values per pathway and database. |
 | **TFEA** | Infer upstream regulators consistent with the observed expression changes. | decoupleR univariate linear model (ULM) applied to the CollecTRI regulon network. | Per-sample TF activity scores with significance. |
-| **Pathway activity** | Estimate canonical signalling-pathway activity per sample. | PROGENy with top responsive targets; z-scored activity with treated−control delta. | Per-sample pathway activity matrix and contrast-level summary. |
+| **Pathway activity** | Estimate canonical signalling-pathway activity per contrast. | decoupleR multivariate linear model (MLM) on the DESeq2 Wald statistic against PROGENy with top responsive targets. | Per-contrast pathway activity scores with *p*-values. |
 | **cMap** | Identify perturbagens producing transcriptomic signatures concordant or discordant with the contrast. | L2S2 / LINCS L1000 signature query using top up- and down-regulated genes. | Ranked perturbagen table with connectivity scores. |
 | **Audit trail** | Ensure reproducibility and provenance of the analysis. | Snapshot of configuration, input checksums, and computational environment. | Resolved config, input MD5 sums, and full session information. |
 :::
@@ -256,7 +256,7 @@ flowchart TD
 | **Gene set enrichment (GSEA)** | 활성/비활성화 된 gene set 탐색. | 선택된 MSigDB collection에 대해 Wald statistic 기반 pre-ranked GSEA. | Gene set별 NES 및 조정 *p*-value. |
 | **Over-representation (ORA)** | DEG 목록에서 과대표현된 pathway 확인. | GO, KEGG, Reactome, Hallmark DB에 대한 hypergeometric test. | Pathway·DB별 raw / adjusted *p*-value. |
 | **TFEA** | 발현 패턴을 설명하는 상위 조절자 추론. | CollecTRI regulon 네트워크에 대한 decoupleR ULM. | 샘플별 TF 활성 score와 유의성. |
-| **Pathway 활성도** | 샘플별 canonical signalling pathway 활성 추정. | PROGENy (top responsive targets) · z-scored 활성도 · treated−control delta. | 샘플별 pathway 활성도 행렬, contrast 수준 요약. |
+| **Pathway 활성도** | Contrast별 canonical signalling pathway 활성 추정. | DESeq2 Wald statistic을 PROGENy network에 대해 decoupleR MLM 적용 (top responsive targets). | Contrast별 pathway 활성 score와 *p*-value. |
 | **cMap** | 해당 contrast와 일치하거나 반대되는 transcriptomic signature의 perturbagen 탐색. | Top up / down 유전자로 L2S2 / LINCS L1000 signature 질의. | Connectivity score 기반 perturbagen ranking 표. |
 | **Audit trail** | 분석 재현성과 provenance 보장. | Config snapshot, 입력 checksum, 계산 환경 스냅샷. | 최종 config, 입력 MD5, 세션 정보. |
 :::

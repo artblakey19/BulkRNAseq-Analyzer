@@ -312,123 +312,60 @@ if (!isTRUE(tfea_enabled)) {
 ### Pathway activity (PROGENy)
 
 ::: {.lang-en}
-PROGENy scores are estimated per-sample pathway activity.
+Contrast-level pathway activity inferred by decoupler's MLM on the DESeq2 Wald statistic against the PROGENy network. Positive score → pathway up in numerator; negative → up in denominator.
 :::
 
 ::: {.lang-ko}
-PROGENy score는 샘플별 pathway 활성 추정치를 나타냄.
+DESeq2 Wald statistic을 PROGENy network에 대해 decoupler의 MLM으로 contrast 단위 pathway 활성도 추정. score > 0이면 numerator에서 활성, < 0이면 denominator에서 활성.
 :::
 
-```{r enr-progeny-heatmap, fig.width=8.5, fig.height=7}
+```{r enr-progeny-bars, fig.width=7.5, fig.height=6}
 pw_path <- file.path(project_root, "results", "progeny", cid,
                      "progeny_scores.tsv")
 pw <- safe_read(pw_path, sep = "\t")
 
-crow <- contrast_row(cid)
-num  <- if (is.null(crow)) NA else as.character(crow$numerator)
-den  <- if (is.null(crow)) NA else as.character(crow$denominator)
-
-sample_cond <- NULL
-pw_mat <- NULL
-
 if (!isTRUE(progeny_enabled)) {
   no_results("PROGENy stage disabled in config.yaml.")
 } else if (is.null(pw) || nrow(pw) == 0 ||
-    ncol(pw) < 2 ||
-    all(vapply(pw[, -1, drop = FALSE], function(x) all(is.na(x)), logical(1)))) {
+    !all(c("pathway", "score") %in% names(pw)) ||
+    all(is.na(pw$score))) {
   no_results("PROGENy scores unavailable or all-NA.")
 } else {
-  sample_col <- names(pw)[1]
-  pw_mat <- as.matrix(pw[, -1, drop = FALSE])
-  rownames(pw_mat) <- as.character(pw[[sample_col]])
+  df <- pw |>
+    dplyr::filter(!is.na(score)) |>
+    dplyr::mutate(direction = ifelse(score > 0, "up", "down"),
+                  pathway   = factor(pathway, levels = pathway[order(score)]))
 
-  # Per-pathway z-score across samples. With n=3+3 the mean/sd are rough but
-  # centering/scaling still uncouples baseline magnitude from treatment effect.
-  z_mat <- scale(pw_mat)
-  z_mat[is.na(z_mat)] <- 0
-
-  # Order pathways by |mean(num) - mean(den)| on z-scores so the rows most
-  # responsive to the contrast float to the top of the heatmap.
-  cond_lookup <- setNames(as.character(samples$condition),
-                          as.character(samples$sample))
-  sample_cond <- cond_lookup[rownames(z_mat)]
-  num_rows <- which(sample_cond == num)
-  den_rows <- which(sample_cond == den)
-
-  order_metric <- if (length(num_rows) > 0 && length(den_rows) > 0) {
-    abs(colMeans(z_mat[num_rows, , drop = FALSE], na.rm = TRUE) -
-        colMeans(z_mat[den_rows, , drop = FALSE], na.rm = TRUE))
-  } else {
-    apply(z_mat, 2, function(x) diff(range(x, na.rm = TRUE)))
-  }
-  path_order <- names(sort(order_metric, decreasing = TRUE))
-
-  long <- as.data.frame(as.table(z_mat))
-  names(long) <- c("sample", "pathway", "z")
-  long$sample  <- factor(long$sample,  levels = rownames(z_mat))
-  long$pathway <- factor(long$pathway, levels = rev(path_order))
-
-  lim <- max(abs(long$z), na.rm = TRUE)
-  if (!is.finite(lim) || lim == 0) lim <- 1
-
-  p <- ggplot2::ggplot(long,
-          ggplot2::aes(x = sample, y = pathway, fill = z)) +
-    ggplot2::geom_tile(colour = "white", linewidth = 0.25) +
-    ggplot2::scale_fill_gradient2(
-      low = "#2c7bb6", mid = "white", high = "#d7191c",
-      midpoint = 0, limits = c(-lim, lim), na.value = "grey90",
-      name = "z-score"
-    ) +
-    ggplot2::labs(x = NULL, y = NULL,
-                  title = "PROGENy activity, z-scored per pathway",
-                  subtitle = "Rows sorted by |Δ| between contrast groups") +
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = score, y = pathway, fill = direction)) +
+    ggplot2::geom_col() +
+    ggplot2::scale_fill_manual(values = c(up = "#c0392b", down = "#2c7bb6"),
+                               guide = "none") +
+    ggplot2::geom_vline(xintercept = 0, colour = "grey40") +
+    ggplot2::labs(x = "MLM activity score", y = NULL,
+                  title = "PROGENy pathway activity",
+                  subtitle = sprintf("%s — input: DESeq2 Wald stat", cid)) +
     ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-      axis.text.y = ggplot2::element_text(size = 10),
-      plot.margin = ggplot2::margin(6, 10, 12, 10)
-    )
+    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10))
   p
 }
 ```
 
-#### Treated vs control delta (raw scale) + Wilcoxon p
-
-```{r enr-progeny-delta}
+```{r enr-progeny-table}
 if (!isTRUE(progeny_enabled)) {
   no_results("PROGENy stage disabled in config.yaml.")
-} else if (is.null(pw) || nrow(pw) == 0 || ncol(pw) < 2 ||
-    is.na(num) || is.na(den) ||
-    !length(which(sample_cond == num)) ||
-    !length(which(sample_cond == den))) {
-  no_results("Delta table not computable (missing contrast or group members).")
+} else if (is.null(pw) || nrow(pw) == 0 ||
+    !all(c("pathway", "score") %in% names(pw))) {
+  no_results("PROGENy table unavailable.")
 } else {
-  num_idx <- which(sample_cond == num)
-  den_idx <- which(sample_cond == den)
-  stats_df <- do.call(rbind, lapply(colnames(pw_mat), function(path) {
-    a <- pw_mat[num_idx, path]
-    b <- pw_mat[den_idx, path]
-    delta <- mean(a, na.rm = TRUE) - mean(b, na.rm = TRUE)
-    pool_sd <- stats::sd(c(a, b), na.rm = TRUE)
-    effect_size <- if (is.finite(pool_sd) && pool_sd > 0) delta / pool_sd else NA_real_
-    pw_p <- tryCatch(
-      stats::wilcox.test(a, b, exact = FALSE)$p.value,
-      error = function(e) NA_real_
-    )
-    data.frame(pathway = path, delta = delta, effect_size = effect_size,
-               wilcox_p = pw_p, stringsAsFactors = FALSE)
-  }))
-  stats_df$wilcox_padj <- stats::p.adjust(stats_df$wilcox_p, method = "BH")
-  stats_df <- stats_df[order(abs(stats_df$delta), decreasing = TRUE), ]
-  rownames(stats_df) <- NULL
+  show_df <- pw |>
+    dplyr::arrange(dplyr::desc(abs(score)))
 
   dt <- report_table(
-    stats_df,
-    rownames = FALSE,
-    caption  = sprintf("PROGENy pathway activity: %s minus %s (n=%d vs %d)",
-                       num, den, length(num_idx), length(den_idx)),
-    options  = list(pageLength = 14, lengthMenu = c(14, 25, 50, 100), dom = "lfrtip", scrollX = TRUE),
-    signif_cols = c("delta", "effect_size", "wilcox_p", "wilcox_padj"),
+    show_df, rownames = FALSE,
+    caption  = sprintf("PROGENy activity (decoupler MLM on Wald stat) — %s", cid),
+    options  = list(pageLength = 14, lengthMenu = c(14, 25, 50, 100),
+                    dom = "lfrtip", scrollX = TRUE),
+    signif_cols = intersect(c("score", "p_value", "padj"), names(show_df)),
     digits  = 3
   )
   dt

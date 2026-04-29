@@ -55,8 +55,6 @@ python3 -m venv .venv
 
 HTML Report는 `results/report/report.html`에 생성됨.
 
----
-
 ### 로컬 실행(Docker)
 
 Docker volume을 바인드할 디렉터리에 counts TSV와 `multiqc_report_data/`를 둔다.
@@ -94,8 +92,6 @@ docker run --rm \
 
 Jupyter 사용 시: 컨테이너 실행 후 터미널에 출력되는 `http://127.0.0.1:8888/lab?token=...` URL을 브라우저에 붙여넣고 `notebooks/explore.ipynb`를 연다. Snakemake 전체 파이프라인을 재실행할 필요 없이 plot label·cutoff 등을 자유롭게 조정 가능.
 
----
-
 ## 리포트 섹션
 
 | 단계                                 | 방법                                                       | 주 산출물                                                              |
@@ -106,11 +102,9 @@ Jupyter 사용 시: 컨테이너 실행 후 터미널에 출력되는 `http://12
 | **Gene-set enrichment (GSEA)** | pre-ranked GSEA (ranking matric: Wald stat).               | MSigDB H / C2:CP (Reactome, WikiPathways, PID, BioCarta) / C2:CGP / C6 |
 | **Over-representation (ORA)**  | `clusterProfiler::enricher()` + KEGG live REST.          | DB(GOBP, KEGG, Reactome, Hallmark)별 top-10 up/down                    |
 | **TFEA**                  | decoupler + ULM + CollecTRI                               | Top-30 TF + 전체 score                                                 |
-| **Pathway 활성도**             | decoupler + PROGENy                                        | z-scored heatmap by sample + treated−control delta (Wilcoxon).        |
+| **Pathway 활성도**             | decoupler MLM + PROGENy                                    | Contrast 단위 pathway activity bar chart (input: DESeq2 Wald stat).   |
 | **cMap**         | Up/down DEG signature로 L2S2 paired query.                 | Ranked perturbagen                                                     |
 | **Audit trail**                | Config snapshot, MD5, session info                        | 재현성 정보                                                            |
-
----
 
 ## 저장소 구조
 

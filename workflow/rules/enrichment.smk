@@ -60,7 +60,6 @@ rule tfea:
 rule progeny:
     input:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
-        vst_matrix = RESULTS / "exploratory" / "vst_matrix.tsv",
     output:
         scores = RESULTS / "progeny" / "{contrast}" / "progeny_scores.tsv",
     params:

@@ -55,11 +55,15 @@ python3 -m venv .venv
 
 HTML report is written to `results/report/report.html`.
 
----
-
 ### Run locally (Docker)
 
-Place the counts TSV and `multiqc_report_data/` in the directory that will be bind-mounted as the Docker volume. The same image serves three sub-commands: `init` generates config, the default command runs the pipeline, `jupyter` launches JupyterLab.
+Place the counts TSV and `multiqc_report_data/` in the directory that will be bind-mounted as the Docker volume.
+
+Three sub-commands:
+
+- `init` — generate config
+- `all` — run the pipeline (default)
+- `jupyter` — launch JupyterLab
 
 ```bash
 # 1. Generate config (enter sample information at the prompts)
@@ -86,9 +90,7 @@ docker run --rm \
     ghcr.io/artblakey19/bulk-rnaseq:latest jupyter
 ```
 
-For Jupyter: paste the `http://127.0.0.1:8888/lab?token=...` URL printed in the terminal into your browser and open `notebooks/explore.ipynb`. Plot labels, cutoffs, and so on can be adjusted without rerunning the Snakemake pipeline.
-
----
+For Jupyter: paste the `http://127.0.0.1:8888/lab?token=...` URL printed in the container's terminal into your browser and open `notebooks/explore.ipynb`. Plot labels, cutoffs, and the like can be tuned freely without rerunning the Snakemake pipeline.
 
 ## Report sections
 
@@ -100,11 +102,9 @@ For Jupyter: paste the `http://127.0.0.1:8888/lab?token=...` URL printed in the 
 | **Gene-set enrichment (GSEA)** | Pre-ranked GSEA (ranking metric: Wald stat).                    | MSigDB H / C2:CP (Reactome, WikiPathways, PID, BioCarta) / C2:CGP / C6 |
 | **Over-representation (ORA)**  | `clusterProfiler::enricher()` + KEGG live REST.                 | Per-DB (GO BP, KEGG, Reactome, Hallmark) top-10 up / down              |
 | **TFEA**                | decoupler + ULM + CollecTRI                                     | Top-30 TFs + full score table                                          |
-| **Pathway activity**           | decoupler + PROGENy                                             | Per-sample z-scored heatmap + treated−control delta (Wilcoxon).        |
+| **Pathway activity**           | decoupler MLM + PROGENy                                         | Per-contrast pathway activity bar chart (input: DESeq2 Wald stat).     |
 | **cMap**         | L2S2 paired query on up / down DEG signatures.                  | Ranked perturbagens                                                    |
 | **Audit trail**                | Config snapshot, MD5, session info                              | Reproducibility block                                                  |
-
----
 
 ## Repository layout
 

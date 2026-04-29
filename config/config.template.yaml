@@ -1,15 +1,15 @@
 project:
-  name: ''
-  analyst: ''
+  name: ""
+  analyst: ""
   experiment:
-    cell_line: ''
-    compound: ''
-    dose: ''
-    duration: ''
-    notes: ''
+    cell_line: ""
+    compound: ""
+    dose: ""
+    duration: ""
+    notes: ""
 input:
-  counts_tsv: ''
-  multiqc_data_dir: ''
+  counts_tsv: ""
+  multiqc_data_dir: ""
   samples_tsv: config/samples.tsv
   contrasts_tsv: config/contrasts.tsv
 de:
@@ -27,23 +27,23 @@ enrichment:
     # `id` is the MSigDB collection string (fetched via msigdbr); `label` is
     # the display name used in the report and notebook.
     collections:
-    - {id: H,                   label: Hallmark}
-    - {id: C2:CP:REACTOME,      label: Reactome}
-    - {id: C2:CP:WIKIPATHWAYS,  label: WikiPathways}
-    - {id: C2:CP:PID,           label: PID}
-    - {id: C2:CP:BIOCARTA,      label: BioCarta}
-    - {id: C2:CGP,              label: CGP}
-    - {id: C6,                  label: Oncogenic}
+      - { id: H, label: Hallmark }
+      - { id: C2:CP:REACTOME, label: Reactome }
+      - { id: C2:CP:WIKIPATHWAYS, label: WikiPathways }
+      - { id: C2:CP:PID, label: PID }
+      - { id: C2:CP:BIOCARTA, label: BioCarta }
+      - { id: C2:CGP, label: CGP }
+      - { id: C6, label: Oncogenic }
   ora:
     min_input_genes: 100
     max_input_genes: 500
     # `id` is the MSigDB collection string (fetched via msigdbr); KEGG is the
     # one special-cased id and is dispatched through enrichKEGG.
     databases:
-    - {id: C5:GO:BP,        label: "GO Biological Process"}
-    - {id: KEGG,            label: KEGG}
-    - {id: C2:CP:REACTOME,  label: Reactome}
-    - {id: H,               label: Hallmark}
+      - { id: C5:GO:BP, label: "GO Biological Process" }
+      - { id: KEGG, label: KEGG }
+      - { id: C2:CP:REACTOME, label: Reactome }
+      - { id: H, label: Hallmark }
 tfea:
   enabled: true
   split_complexes: false
@@ -52,6 +52,7 @@ tfea:
   top_n: 50
 progeny:
   enabled: true
+  #top_targets: number of target genes used in each pathway
   top_targets: 500
 cmap:
   enabled: true
@@ -59,5 +60,5 @@ cmap:
   top_down: 250
 report:
   formats:
-  - html
-  - pdf
+    - html
+    - pdf
