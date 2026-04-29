@@ -23,6 +23,7 @@ rule ora:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
     output:
         table = RESULTS / "enrichment" / "{contrast}" / "ora_combined.csv",
+        input_genes = RESULTS / "enrichment" / "{contrast}" / "ora_input_genes.csv",
     params:
         databases = ORA_DATABASE_IDS,
         primary = config["de"]["primary"],

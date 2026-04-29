@@ -77,7 +77,7 @@ Rule names appear as directory names, config keys, and labels. Touch:
 - `tests/test_data/config_test.yaml` — mirror if the schema changed; otherwise only touch if fixture needs new keys.
 - The report and notebooks read values from the user's live `config.yaml`, so they don't need edits — they just surface whatever is set.
 - If adding a new **MSigDB collection id** (e.g. C8), also check `workflow/scripts/gsea.R` dispatches it correctly.
-- If adding a new **ORA database id**, add its enrichment call in `workflow/scripts/ora.R` (only GO_BP / KEGG / Reactome / Hallmark are dispatched today).
+- ORA databases use MSigDB collection strings (e.g. `C5:GO:BP`, `C2:CP:REACTOME`, `H`) parsed by `workflow/scripts/ora.R` the same way `gsea.R` parses its collection ids. The literal id `KEGG` is the one special case, dispatched through `enrichKEGG`. Adding a new MSigDB-backed db only needs a config entry; adding non-MSigDB sources requires a new branch in `ora.R`.
 
 ### Changing an environment's package set
 

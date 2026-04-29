@@ -115,68 +115,11 @@ if (!isTRUE(enrichment_enabled)) {
 ### ORA (supplementary)
 
 ```{r enr-ora, results='asis', fig.width=9, fig.height=11}
-de_path <- file.path(project_root, "results", "de", cid, "deseq2_results.csv")
-de_for_ora <- safe_read(de_path)
-ora_de_cfg <- cfg$de %||% list()
-ora_cfg <- cfg$enrichment$ora %||% list()
-ora_primary <- ora_de_cfg$primary %||% list(padj = 0.05, abs_lfc = 1)
-ora_secondary <- ora_de_cfg$secondary %||% list(padj = 0.10, abs_lfc = 0.5)
-ora_min_genes <- ora_cfg$min_input_genes %||% 100
-ora_max_genes <- ora_cfg$max_input_genes %||% 500
-
-.ora_candidates <- function(de_tbl, cutoff_name, cutoff) {
-  if (is.null(de_tbl) || nrow(de_tbl) == 0) return(de_tbl[0, , drop = FALSE])
-  de_tbl |>
-    dplyr::filter(
-      !is.na(padj),
-      !is.na(log2FoldChange),
-      padj < cutoff$padj,
-      abs(log2FoldChange) >= cutoff$abs_lfc,
-      !is.na(gene_name),
-      nzchar(as.character(gene_name))
-    ) |>
-    dplyr::mutate(cutoff = cutoff_name)
-}
-
-ora_input_genes <- NULL
-ora_input_cutoff <- NA_character_
-if (!is.null(de_for_ora) && nrow(de_for_ora) > 0) {
-  prim_ora <- .ora_candidates(de_for_ora, "primary", ora_primary)
-  sec_ora  <- .ora_candidates(de_for_ora, "secondary", ora_secondary)
-  if (nrow(prim_ora) >= ora_min_genes) {
-    ora_input_genes <- prim_ora
-    ora_input_cutoff <- "primary"
-  } else if (nrow(sec_ora) >= ora_min_genes) {
-    ora_input_genes <- sec_ora
-    ora_input_cutoff <- "secondary"
-  } else {
-    ora_input_genes <- prim_ora[0, , drop = FALSE]
-  }
-  if (!is.null(ora_input_genes) && nrow(ora_input_genes) > ora_max_genes) {
-    ora_input_genes <- ora_input_genes |>
-      dplyr::arrange(dplyr::desc(abs(log2FoldChange))) |>
-      dplyr::slice_head(n = ora_max_genes)
-  }
-  if (!is.null(ora_input_genes) && nrow(ora_input_genes) > 0) {
-    ora_input_genes <- ora_input_genes |>
-      dplyr::mutate(
-        direction = dplyr::case_when(
-          log2FoldChange > 0 ~ "up",
-          log2FoldChange < 0 ~ "down",
-          TRUE ~ NA_character_
-        )
-      ) |>
-      dplyr::filter(direction %in% c("up", "down")) |>
-      dplyr::group_by(direction) |>
-      dplyr::arrange(dplyr::desc(abs(log2FoldChange)), .by_group = TRUE) |>
-      dplyr::mutate(input_rank = dplyr::row_number()) |>
-      dplyr::ungroup() |>
-      dplyr::select(dplyr::any_of(c(
-        "direction", "input_rank", "cutoff", "gene_id", "gene_name",
-        "log2FoldChange", "padj"
-      )))
-  }
-}
+ora_min_genes <- cfg$enrichment$ora$min_input_genes %||% 100
+ora_input_path <- file.path(project_root, "results", "enrichment", cid, "ora_input_genes.csv")
+ora_input_genes <- safe_read(ora_input_path)
+ora_input_cutoff <- if (!is.null(ora_input_genes) && nrow(ora_input_genes) > 0)
+                      unique(ora_input_genes$cutoff)[1] else NA_character_
 
 if (is_html_report()) {
   cat("\n\n<details>\n")

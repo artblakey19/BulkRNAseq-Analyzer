@@ -32,10 +32,10 @@ enrichment:
     min_input_genes: 100
     max_input_genes: 500
     databases:
-      - {id: GO_BP,    label: "GO Biological Process"}
-      - {id: KEGG,     label: KEGG}
-      - {id: Reactome, label: Reactome}
-      - {id: Hallmark, label: Hallmark}
+      - {id: C5:GO:BP,        label: "GO Biological Process"}
+      - {id: KEGG,            label: KEGG}
+      - {id: C2:CP:REACTOME,  label: Reactome}
+      - {id: H,               label: Hallmark}
 
 tfea:
   enabled: true

@@ -32,7 +32,7 @@ enrichment:
     min_input_genes: 100
     max_input_genes: 500
     databases:
-      - {id: GO_BP, label: "GO Biological Process"}
+      - {id: C5:GO:BP, label: "GO Biological Process"}
 
 tfea:
   enabled: false

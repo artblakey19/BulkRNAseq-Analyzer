@@ -37,14 +37,13 @@ enrichment:
   ora:
     min_input_genes: 100
     max_input_genes: 500
-    # `id` values must match a dispatch branch in workflow/scripts/ora.R
-    # (GO_BP, KEGG, Reactome, Hallmark). Adding a new id requires adding
-    # the enrichment call in that script.
+    # `id` is the MSigDB collection string (fetched via msigdbr); KEGG is the
+    # one special-cased id and is dispatched through enrichKEGG.
     databases:
-    - {id: GO_BP,    label: "GO Biological Process"}
-    - {id: KEGG,     label: KEGG}
-    - {id: Reactome, label: Reactome}
-    - {id: Hallmark, label: Hallmark}
+    - {id: C5:GO:BP,        label: "GO Biological Process"}
+    - {id: KEGG,            label: KEGG}
+    - {id: C2:CP:REACTOME,  label: Reactome}
+    - {id: H,               label: Hallmark}
 tfea:
   enabled: true
   split_complexes: false
