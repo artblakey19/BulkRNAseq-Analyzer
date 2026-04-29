@@ -9,7 +9,7 @@
 [![run with docker](https://img.shields.io/badge/run%20with-docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 [![run with jupyter](https://img.shields.io/badge/run%20with-jupyter-F37626?logo=jupyter&logoColor=white)](https://jupyter.org)
 
-`<sub>`[EN](README.md) · **한국어** `</sub>`
+[EN](README.md) · **한국어**
 
 **nf-core/rnaseq**의 salmon gene-count 출력을 입력으로 받아, **MultiQC**, **DESeq2**, **GSEA(MsigDB)**, **ORA(ClusterProfiler)**, **TFEA(CollecTRI)**, **PROGENy pathway scoring**, **L2S2 (LINCS L1000) cMap** 결과를 HTML 리포트로 생성하는 Snakemake 파이프라인
 
