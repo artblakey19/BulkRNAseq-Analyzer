@@ -98,5 +98,6 @@ Thumbs.db
 # ============================================================
 .claude/
 .codex
+CLAUDE.md
 
 time_series.md
