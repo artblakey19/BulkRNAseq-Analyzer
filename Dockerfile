@@ -54,7 +54,7 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
         pandas=2 \
         numpy \
         anndata \
-        decoupler-py \
+        decoupler-py>=2 \
         requests \
         pyyaml=6 \
         jupyterlab \

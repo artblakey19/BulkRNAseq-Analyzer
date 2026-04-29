@@ -282,7 +282,6 @@ sec    <- de_cfg$secondary %||% list(padj = NA, abs_lfc = NA)
 ora_cfg <- cfg$enrichment$ora  %||% list()
 gsea_cfg <- cfg$enrichment$gsea %||% list()
 tf_cfg   <- cfg$tfea    %||% list()
-pw_cfg   <- cfg$progeny %||% list()
 dr_cfg   <- cfg$cmap    %||% list()
 
 cat("| Setting | Value |\n|---|---|\n")
@@ -309,7 +308,6 @@ cat(sprintf("| GSEA collections | %s |\n",
 cat(sprintf("| TFEA (min_size / top_n) | %s / %s |\n",
             tf_cfg$min_size %||% "—",
             tf_cfg$top_n %||% "—"))
-cat(sprintf("| PROGENy top targets | %s |\n", pw_cfg$top_targets %||% "—"))
 cat(sprintf("| cMap (top_up / top_down) | %s / %s |\n",
             dr_cfg$top_up  %||% "—",
             dr_cfg$top_down %||% "—"))

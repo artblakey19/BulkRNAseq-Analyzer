@@ -301,7 +301,7 @@ if (!isTRUE(tfea_enabled)) {
   dt <- report_table(
     show_df, rownames = FALSE, filter = "top",
     options  = list(pageLength = 10, lengthMenu = c(10, 25, 50, 100), scrollX = TRUE, dom = "lfrtip"),
-    signif_cols = intersect(c("score", "p_value"), names(show_df)),
+    signif_cols = intersect(c("score", "p_value", "padj"), names(show_df)),
     digits  = 3
   )
   cat(knitr::knit_print(dt))

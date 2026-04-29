@@ -43,12 +43,6 @@ rule tfea:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
     output:
         scores = RESULTS / "tfea" / "{contrast}" / "tf_scores.tsv",
-        top = RESULTS / "tfea" / "{contrast}" / "tf_top.tsv",
-    params:
-        min_size = config["tfea"]["min_size"],
-        padj_cutoff = config["tfea"]["padj_cutoff"],
-        top_n = config["tfea"]["top_n"],
-        split_complexes = config["tfea"]["split_complexes"],
     log:
         "logs/tfea/{contrast}.log",
     conda:
@@ -62,8 +56,6 @@ rule progeny:
         de = RESULTS / "de" / "{contrast}" / "deseq2_results.csv",
     output:
         scores = RESULTS / "progeny" / "{contrast}" / "progeny_scores.tsv",
-    params:
-        top_targets = config["progeny"]["top_targets"],
     log:
         "logs/progeny/{contrast}.log",
     conda:

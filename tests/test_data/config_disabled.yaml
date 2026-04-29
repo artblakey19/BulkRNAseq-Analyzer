@@ -36,14 +36,9 @@ enrichment:
 
 tfea:
   enabled: false
-  split_complexes: false
-  min_size: 5
-  padj_cutoff: 0.05
-  top_n: 50
 
 progeny:
   enabled: false
-  top_targets: 500
 
 cmap:
   enabled: false

@@ -3,7 +3,7 @@ channels:
   - bioconda
 dependencies:
   - python=3.11
-  - decoupler-py
+  - decoupler-py>=2
   - pandas
   - numpy
   - anndata

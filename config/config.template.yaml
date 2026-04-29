@@ -46,14 +46,8 @@ enrichment:
       - { id: H, label: Hallmark }
 tfea:
   enabled: true
-  split_complexes: false
-  min_size: 5
-  padj_cutoff: 0.05
-  top_n: 50
 progeny:
   enabled: true
-  #top_targets: number of target genes used in each pathway
-  top_targets: 500
 cmap:
   enabled: true
   top_up: 250

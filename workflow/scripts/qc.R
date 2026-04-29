@@ -31,6 +31,12 @@ samples <- read_tsv(samples_path, show_col_types = FALSE)
 
 counts <- read_tsv(counts_path, show_col_types = FALSE)
 
+missing_counts <- setdiff(samples$sample, names(counts))
+if (length(missing_counts) > 0) {
+  stop(sprintf("samples.tsv has samples not present as columns in counts: %s",
+               paste(missing_counts, collapse = ", ")))
+}
+
 assigned_tbl <- tibble(
   sample = samples$sample,
   assigned_reads = vapply(
@@ -44,8 +50,7 @@ assigned_tbl <- tibble(
 # of alias names. Matches exact or suffix (for module-prefixed MultiQC keys
 # such as "STAR_mqc-generalstats-star-uniquely_mapped_percent").
 metric_aliases <- list(
-  total_reads         = c("total_reads", "total_sequences",
-                          "m_reads", "m_seqs", "m_reads_mapped"),
+  total_reads         = c("total_reads", "total_sequences"),
   # Generic "overall % aligned" — from Salmon/STAR aggregate columns. Includes
   # multi-mappers, so it can look healthy even when unique alignments are low.
   mapping_rate        = c("mapping_rate", "pct_mapped", "percent_mapped"),
@@ -202,6 +207,17 @@ parse_dupradar <- function(dir) {
 mqc <- load_multiqc_general_stats(multiqc_dir)
 
 if (!is.null(mqc)) {
+  missing_in_mqc <- setdiff(samples$sample, mqc$sample)
+  extra_in_mqc  <- setdiff(mqc$sample, samples$sample)
+  if (length(missing_in_mqc) > 0) {
+    message(sprintf("qc_summary: samples missing from MultiQC general_stats: %s",
+                    paste(missing_in_mqc, collapse = ", ")))
+  }
+  if (length(extra_in_mqc) > 0) {
+    message(sprintf("qc_summary: MultiQC general_stats has rows not in samples.tsv: %s",
+                    paste(extra_in_mqc, collapse = ", ")))
+  }
+
   mqc_tbl <- tibble(
     sample              = mqc$sample,
     total_reads         = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$total_reads))),

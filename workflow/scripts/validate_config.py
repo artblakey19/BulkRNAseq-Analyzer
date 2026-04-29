@@ -49,14 +49,9 @@ SUPPORTED_CONFIG_SCHEMA: dict[str, Any] = {
     },
     "tfea": {
         "enabled": None,
-        "split_complexes": None,
-        "min_size": None,
-        "padj_cutoff": None,
-        "top_n": None,
     },
     "progeny": {
         "enabled": None,
-        "top_targets": None,
     },
     "cmap": {
         "enabled": None,
@@ -232,13 +227,8 @@ def validate_config(
         ["min_input_genes", "max_input_genes", "databases"],
         errors,
     )
-    _require_keys(
-        config,
-        "tfea",
-        ["enabled", "split_complexes", "min_size", "padj_cutoff", "top_n"],
-        errors,
-    )
-    _require_keys(config, "progeny", ["enabled", "top_targets"], errors)
+    _require_keys(config, "tfea", ["enabled"], errors)
+    _require_keys(config, "progeny", ["enabled"], errors)
     _require_keys(config, "cmap", ["enabled", "top_up", "top_down"], errors)
     _require_keys(config, "report", ["formats"], errors)
     for section in ["enrichment", "tfea", "progeny", "cmap"]:
