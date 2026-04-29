@@ -9,7 +9,7 @@
 [![run with docker](https://img.shields.io/badge/run%20with-docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
 [![run with jupyter](https://img.shields.io/badge/run%20with-jupyter-F37626?logo=jupyter&logoColor=white)](https://jupyter.org)
 
-<sub>**EN** · [한국어](README.ko.md)</sub>
+**EN** · [한국어](README.ko.md)
 
 Snakemake pipeline that takes salmon gene-count output from **nf-core/rnaseq** and produces HTML reports combining **MultiQC**, **DESeq2**, **GSEA (MSigDB)**, **ORA (clusterProfiler)**, **TFEA (CollecTRI)**, **PROGENy pathway scoring**, and **L2S2 (LINCS L1000) cMap** results.
 
