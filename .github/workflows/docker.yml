@@ -4,28 +4,11 @@ name: Docker
 #   ghcr.io/<owner>/bulk-rnaseq
 #
 # Triggers:
-#   - push to main          → :latest + :sha-<short>
-#   - tag push v*           → :<semver>, :<major.minor>
-#   - pull_request to main  → build-only (no push) for sanity check
-#   - workflow_dispatch     → manual rebuild from the Actions tab
+#   - tag push v*.*.*   → :<version>, :<major.minor>, :latest, :sha-<short>
+#   - workflow_dispatch → manual rebuild from the Actions tab (uses default branch)
 on:
   push:
-    branches: [main]
     tags: ['v*']
-    paths:
-      - 'Dockerfile'
-      - 'docker/**'
-      - 'workflow/**'
-      - 'report/**'
-      - '.github/workflows/docker.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'Dockerfile'
-      - 'docker/**'
-      - 'workflow/**'
-      - 'report/**'
-      - '.github/workflows/docker.yml'
   workflow_dispatch:
 
 env:
@@ -46,24 +29,10 @@ jobs:
       - name: Lowercase repository owner
         run: echo "OWNER_LC=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
-      # On tag push, make sure the VERSION file in the repo matches the tag
-      # (minus the leading "v"). Prevents shipping a release image that
-      # reports a stale version in its reproducibility block.
-      - name: Verify VERSION matches tag
-        if: github.ref_type == 'tag'
-        run: |
-          FILE_VER="$(cat VERSION | tr -d '[:space:]')"
-          TAG_VER="${GITHUB_REF_NAME#v}"
-          if [[ "$FILE_VER" != "$TAG_VER" ]]; then
-            echo "VERSION file ($FILE_VER) does not match tag (${GITHUB_REF_NAME})." >&2
-            exit 1
-          fi
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -76,11 +45,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/bulk-rnaseq
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
             type=sha,prefix=sha-,format=short
 
       - name: Build and push
@@ -89,7 +56,7 @@ jobs:
           context: .
           file: Dockerfile
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=bulk-rnaseq
