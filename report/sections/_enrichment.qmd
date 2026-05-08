@@ -64,25 +64,31 @@ if (!isTRUE(enrichment_enabled)) {
         NES < 0 ~ "down",
         TRUE ~ NA_character_
       ))
-    top <- .top_by_direction(ranked, "direction", "padj", n = 10) |>
-      dplyr::mutate(label = .trunc_label(pathway))
-    top$label <- factor(top$label, levels = rev(unique(top$label)))
-    p <- ggplot2::ggplot(top, ggplot2::aes(x = NES, y = label, fill = direction)) +
-      ggplot2::geom_col() +
-      ggplot2::scale_fill_manual(values = c(up = "#c0392b", down = "#2c7bb6")) +
-      ggplot2::geom_vline(xintercept = 0, colour = "grey40") +
-      ggplot2::labs(x = "NES", y = NULL,
-                    title = sprintf("Top 10 up / Top 10 down %s gene sets (by padj)", grp)) +
-      ggplot2::theme_minimal(base_size = 11) +
-      ggplot2::theme(
-        axis.text.y = ggplot2::element_text(size = 9),
-        plot.margin = ggplot2::margin(6, 10, 6, 6)
-      )
-    print(p)
-    cat("\n\n")
-
-    show_df <- ranked |>
+    top <- ranked |>
+      dplyr::filter(!is.na(padj), padj < 0.25) |>
       .top_by_direction("direction", "padj", n = 10) |>
+      dplyr::mutate(label = .trunc_label(pathway))
+    if (nrow(top) > 0) {
+      top$label <- factor(top$label, levels = rev(unique(top$label)))
+      p <- ggplot2::ggplot(top, ggplot2::aes(x = NES, y = label, fill = direction)) +
+        ggplot2::geom_col() +
+        ggplot2::scale_fill_manual(values = c(up = "#c0392b", down = "#2c7bb6")) +
+        ggplot2::geom_vline(xintercept = 0, colour = "grey40") +
+        ggplot2::labs(x = "NES", y = NULL,
+                      title = sprintf("Top 10 up / Top 10 down %s gene sets (padj < 0.25)", grp)) +
+        ggplot2::theme_minimal(base_size = 11) +
+        ggplot2::theme(
+          axis.text.y = ggplot2::element_text(size = 9),
+          plot.margin = ggplot2::margin(6, 10, 6, 6)
+        )
+      print(p)
+      cat("\n\n")
+    } else {
+      cat(sprintf("\n\n_No %s gene sets passed padj < 0.25._\n\n", grp))
+    }
+
+    show_df <- df |>
+      dplyr::arrange(padj) |>
       dplyr::select(dplyr::any_of(c("collection", "pathway", "NES",
                                     "pval", "padj", "size", "leadingEdge")))
     dt <- report_table(
@@ -197,17 +203,21 @@ if (!isTRUE(enrichment_enabled)) {
     db_lbl <- .database_label(db)
     cat(sprintf("\n\n##### %s\n\n", db_lbl))
 
+    show_cols <- c("direction", "cutoff", "ID",
+                   "Description", "GeneRatio", "BgRatio",
+                   "pvalue", "p.adjust", "qvalue", "Count")
     show_df <- ora_db |>
-      dplyr::filter(direction %in% c("up", "down")) |>
+      dplyr::arrange(p.adjust) |>
+      dplyr::select(dplyr::any_of(show_cols))
+
+    bars <- ora_db |>
+      dplyr::filter(direction %in% c("up", "down"),
+                    !is.na(p.adjust), p.adjust < 0.25) |>
       dplyr::group_by(direction) |>
       dplyr::arrange(p.adjust, .by_group = TRUE) |>
       dplyr::slice_head(n = 10) |>
       dplyr::ungroup() |>
-      dplyr::select(dplyr::any_of(c("direction", "cutoff", "ID",
-                                    "Description", "GeneRatio", "BgRatio",
-                                    "pvalue", "p.adjust", "qvalue", "Count")))
-
-    bars <- show_df |>
+      dplyr::select(dplyr::any_of(show_cols)) |>
       dplyr::mutate(
         neglog10p = -log10(pmax(p.adjust, 1e-300)),
         Description = ifelse(is.na(Description) | !nzchar(as.character(Description)),
@@ -225,7 +235,7 @@ if (!isTRUE(enrichment_enabled)) {
         ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.8)) +
         ggplot2::scale_fill_manual(values = c(up = "#c0392b", down = "#2c7bb6")) +
         ggplot2::labs(x = "-log10(p.adjust)", y = NULL,
-                      title = sprintf("Top 10 up / Top 10 down %s terms (by p.adjust)", db_lbl)) +
+                      title = sprintf("Top 10 up / Top 10 down %s terms (p.adjust < 0.25)", db_lbl)) +
         ggplot2::theme_minimal(base_size = 11) +
         ggplot2::theme(
           axis.text.y = ggplot2::element_text(size = 9),
@@ -233,6 +243,8 @@ if (!isTRUE(enrichment_enabled)) {
         )
       print(p)
       cat("\n\n")
+    } else {
+      cat(sprintf("\n\n_No %s terms passed p.adjust < 0.25._\n\n", db_lbl))
     }
 
     dt <- report_table(
@@ -274,30 +286,34 @@ if (!isTRUE(tfea_enabled)) {
   cat(as.character(no_results("TFEA output is empty (network fetch may have failed).")))
 } else {
   tf_top <- tf |>
+    dplyr::filter(!is.na(padj), padj < 0.25) |>
     dplyr::mutate(abs_s = abs(score)) |>
     dplyr::arrange(dplyr::desc(abs_s)) |>
     head(30) |>
     dplyr::mutate(source = factor(source, levels = rev(source)))
-  p <- ggplot2::ggplot(tf_top,
-          ggplot2::aes(x = score, y = source,
-                       fill = ifelse(score > 0, "up", "down"))) +
-    ggplot2::geom_col() +
-    ggplot2::scale_fill_manual(values = c(up = "#c0392b", down = "#2c7bb6"),
-                               name = "direction") +
-    ggplot2::geom_vline(xintercept = 0, colour = "grey40") +
-    ggplot2::labs(x = "ULM score", y = NULL,
-                  title = "Top 30 TFs by |score|") +
-    ggplot2::theme_minimal(base_size = 11) +
-    ggplot2::theme(
-      axis.text.y = ggplot2::element_text(size = 9),
-      plot.margin = ggplot2::margin(6, 10, 6, 6)
-    )
-  print(p)
-  cat("\n\n")
+  if (nrow(tf_top) > 0) {
+    p <- ggplot2::ggplot(tf_top,
+            ggplot2::aes(x = score, y = source,
+                         fill = ifelse(score > 0, "up", "down"))) +
+      ggplot2::geom_col() +
+      ggplot2::scale_fill_manual(values = c(up = "#c0392b", down = "#2c7bb6"),
+                                 name = "direction") +
+      ggplot2::geom_vline(xintercept = 0, colour = "grey40") +
+      ggplot2::labs(x = "ULM score", y = NULL,
+                    title = "Top 30 TFs by |score| (padj < 0.25)") +
+      ggplot2::theme_minimal(base_size = 11) +
+      ggplot2::theme(
+        axis.text.y = ggplot2::element_text(size = 9),
+        plot.margin = ggplot2::margin(6, 10, 6, 6)
+      )
+    print(p)
+    cat("\n\n")
+  } else {
+    cat("\n\n_No TFs passed padj < 0.25._\n\n")
+  }
 
   show_df <- tf |>
-    dplyr::arrange(dplyr::desc(abs(score))) |>
-    head(200)
+    dplyr::arrange(dplyr::desc(abs(score)))
   dt <- report_table(
     show_df, rownames = FALSE, filter = "top",
     options  = list(pageLength = 10, lengthMenu = c(10, 25, 50, 100), scrollX = TRUE, dom = "lfrtip"),

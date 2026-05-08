@@ -89,6 +89,7 @@ if (!isTRUE(cmap_enabled)) {
   cat(as.character(no_results("L2S2 query returned no hits (or call failed; see log).")))
 } else {
   top <- hits |>
+    dplyr::filter(!is.na(fdr), fdr < 0.25) |>
     dplyr::arrange(dplyr::desc(abs(score %||% 0)), fdr) |>
     head(30) |>
     dplyr::mutate(
@@ -108,7 +109,7 @@ if (!isTRUE(cmap_enabled)) {
       ggplot2::geom_vline(xintercept = 1, linetype = "dashed",
                           colour = "grey40") +
       ggplot2::labs(x = "odds ratio (score)", y = NULL,
-                    title = "Top 30 perturbagens") +
+                    title = "Top 30 perturbagens (fdr < 0.25)") +
       ggplot2::theme_minimal(base_size = 11) +
       ggplot2::theme(
         axis.text.y = ggplot2::element_text(size = 9),
@@ -116,10 +117,12 @@ if (!isTRUE(cmap_enabled)) {
       )
     print(p)
     cat("\n\n")
+  } else {
+    cat("\n\n_No perturbagens passed fdr < 0.25._\n\n")
   }
 
   dt <- report_table(
-    head(hits, 500),
+    dplyr::arrange(hits, dplyr::desc(abs(score %||% 0)), fdr),
     rownames = FALSE,
     filter   = "top",
     extensions = "Buttons",

@@ -172,7 +172,7 @@ if (is.null(de_tbl) || nrow(de_tbl) == 0) {
   show_cols <- c("gene_id", "gene_name", "baseMean",
                  "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")
   show_cols <- intersect(show_cols, names(de_tbl))
-  de_show <- head(dplyr::arrange(de_tbl, padj), 500)[, show_cols, drop = FALSE]
+  de_show <- dplyr::arrange(de_tbl, padj)[, show_cols, drop = FALSE]
   report_table(
     de_show,
     rownames = FALSE,

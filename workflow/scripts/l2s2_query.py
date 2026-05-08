@@ -30,6 +30,11 @@ OUTPUT_COLUMNS = ["rank", "perturbagen", "moa", "score", "pvalue", "fdr"]
 
 ENDPOINT = "https://l2s2.maayanlab.cloud/graphql"
 
+# L2S2 GraphQL gateway rejects single-request bodies above ~tens of KB
+# (HTTP 413). Aliased fdaCount queries grow linearly with N; chunk to stay
+# safely under the limit and isolate per-chunk failures.
+MOA_CHUNK_SIZE = 200
+
 PAIRED_ENRICH_QUERY = """
 query PairEnrichmentQuery($genesUp: [String]!, $genesDown: [String]!) {
   currentBackground {
@@ -164,34 +169,39 @@ def parse_results(response: dict[str, Any], logger: logging.Logger) -> list[dict
 def fetch_moas(
     drugs: list[str], endpoint: str, logger: logging.Logger
 ) -> dict[str, str]:
-    """Batch-lookup MoA for each drug via a single aliased fdaCount query.
+    """Batch-lookup MoA for each drug via aliased fdaCount queries, in chunks.
 
     L2S2's pairedEnrich returns drug names only; MoA lives on FdaCount and
-    the web UI joins them client-side. On any failure returns {} so callers
-    can fall through to empty moa columns rather than abort.
+    the web UI joins them client-side. Per-chunk failures are isolated:
+    surviving chunks still populate the returned mapping.
     """
     if not drugs:
         return {}
-    parts = [
-        f"a{i}: fdaCount(perturbation: {json.dumps(d)}) {{ moa }}"
-        for i, d in enumerate(drugs)
-    ]
-    query = "query MoaLookup { " + " ".join(parts) + " }"
-    try:
-        resp = post_with_retry(endpoint, {"query": query}, logger)
-    except Exception as exc:
-        logger.warning("MoA lookup failed: %s; rows will have empty moa", exc)
-        return {}
-    if resp.get("errors"):
-        logger.warning("MoA lookup GraphQL errors: %s", resp["errors"])
-    data = resp.get("data") or {}
     out: dict[str, str] = {}
-    for i, drug in enumerate(drugs):
-        node = data.get(f"a{i}") or {}
-        moa = node.get("moa")
-        if moa:
-            out[drug] = moa
-    logger.info("MoA lookup: %d/%d drugs annotated", len(out), len(drugs))
+    chunks = [drugs[i:i + MOA_CHUNK_SIZE] for i in range(0, len(drugs), MOA_CHUNK_SIZE)]
+    for ci, chunk in enumerate(chunks, start=1):
+        parts = [
+            f"a{i}: fdaCount(perturbation: {json.dumps(d)}) {{ moa }}"
+            for i, d in enumerate(chunk)
+        ]
+        query = "query MoaLookup { " + " ".join(parts) + " }"
+        try:
+            resp = post_with_retry(endpoint, {"query": query}, logger)
+        except Exception as exc:
+            logger.warning(
+                "MoA chunk %d/%d failed: %s; continuing with remaining chunks",
+                ci, len(chunks), exc,
+            )
+            continue
+        if resp.get("errors"):
+            logger.warning("MoA chunk %d/%d GraphQL errors: %s", ci, len(chunks), resp["errors"])
+        data = resp.get("data") or {}
+        for i, drug in enumerate(chunk):
+            node = data.get(f"a{i}") or {}
+            moa = node.get("moa")
+            if moa:
+                out[drug] = moa
+    logger.info("MoA lookup: %d/%d drugs annotated (%d chunks)", len(out), len(drugs), len(chunks))
     return out
 
 
