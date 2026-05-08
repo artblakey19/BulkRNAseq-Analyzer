@@ -90,7 +90,49 @@ docker run --rm \
     ghcr.io/artblakey19/bulk-rnaseq:latest jupyter
 ```
 
-Jupyter 사용 시: 컨테이너 실행 후 터미널에 출력되는 `http://127.0.0.1:8888/lab?token=...` URL을 브라우저에 붙여넣고 `notebooks/explore.ipynb`를 연다. Snakemake 전체 파이프라인을 재실행할 필요 없이 plot label·cutoff 등을 자유롭게 조정 가능.
+### 로컬 실행(Docker Compose)
+
+프로젝트 루트에 `compose.yaml`로 저장:
+
+```yaml
+x-base: &base
+  image: ghcr.io/artblakey19/bulk-rnaseq:latest
+  volumes:
+    - ./:/project
+  environment:
+    - TZ=Asia/Seoul
+
+services:
+  init:
+    <<: *base
+    stdin_open: true
+    tty: true
+    command: init
+
+  run:
+    <<: *base
+    command: ["--configfile", "config/config.yaml", "--cores", "all"]
+
+  jupyter:
+    <<: *base
+    ports:
+      - "8888:8888"
+    command: jupyter
+```
+
+```bash
+docker compose run --rm init
+docker compose run --rm run
+docker compose up jupyter
+```
+
+### 이미지 업데이트
+
+```bash
+docker pull ghcr.io/artblakey19/bulk-rnaseq:latest   # docker run 사용 시
+docker compose pull                                  # docker compose 사용 시
+docker image prune                                   # 캐시 정리(선택)
+```
 
 ## 리포트 섹션
 

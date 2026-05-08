@@ -90,7 +90,49 @@ docker run --rm \
     ghcr.io/artblakey19/bulk-rnaseq:latest jupyter
 ```
 
-For Jupyter: paste the `http://127.0.0.1:8888/lab?token=...` URL printed in the container's terminal into your browser and open `notebooks/explore.ipynb`. Plot labels, cutoffs, and the like can be tuned freely without rerunning the Snakemake pipeline.
+### Run locally (Docker Compose)
+
+Save as `compose.yaml` at the project root:
+
+```yaml
+x-base: &base
+  image: ghcr.io/artblakey19/bulk-rnaseq:latest
+  volumes:
+    - ./:/project
+  environment:
+    - TZ=Asia/Seoul
+
+services:
+  init:
+    <<: *base
+    stdin_open: true
+    tty: true
+    command: init
+
+  run:
+    <<: *base
+    command: ["--configfile", "config/config.yaml", "--cores", "all"]
+
+  jupyter:
+    <<: *base
+    ports:
+      - "8888:8888"
+    command: jupyter
+```
+
+```bash
+docker compose run --rm init
+docker compose run --rm run
+docker compose up jupyter
+```
+
+### Updating the image
+
+```bash
+docker pull ghcr.io/artblakey19/bulk-rnaseq:latest   # docker run users
+docker compose pull                                  # docker compose users
+docker image prune                                   # optional cleanup
+```
 
 ## Report sections
 
