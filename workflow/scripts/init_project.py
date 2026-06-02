@@ -115,9 +115,10 @@ def prompt_path(message: str, root: Path, suggestions: list[Path],
         print(f"    [{i}] {r}")
     print("    (enter the number, or type a custom path)")
     # Prefer the existing config value if it's still valid; otherwise the
-    # first auto-detected candidate. Optional fields default to blank so the
-    # user can skip even when a candidate was detected.
-    effective_default = default if default else ("" if optional else rels[0])
+    # first auto-detected candidate. `optional` only governs the no-candidate
+    # case (blank-to-skip vs required, handled above) — a detected candidate
+    # is always the default so optional inputs auto-fill when present.
+    effective_default = default if default else rels[0]
     answer = prompt(message, default=effective_default)
     if answer.isdigit() and 1 <= int(answer) <= len(rels):
         return rels[int(answer) - 1]
