@@ -97,18 +97,27 @@ def suggest_multiqc(root: Path) -> list[Path]:
     return hits
 
 
+def suggest_pipeline_info(root: Path) -> list[Path]:
+    hits: list[Path] = []
+    for dirpath, dirnames, _ in _walk_limited(root):
+        if "pipeline_info" in dirnames:
+            hits.append(dirpath / "pipeline_info")
+    return hits
+
+
 def prompt_path(message: str, root: Path, suggestions: list[Path],
-                default: str | None = None) -> str:
+                default: str | None = None, optional: bool = False) -> str:
     rels = [str(p.relative_to(root.resolve())) for p in suggestions]
     if not rels:
-        return prompt(message, default=default)
+        return prompt(message, default="" if optional else default)
     print(f"  Detected under {root}:")
     for i, r in enumerate(rels, 1):
         print(f"    [{i}] {r}")
     print("    (enter the number, or type a custom path)")
     # Prefer the existing config value if it's still valid; otherwise the
-    # first auto-detected candidate.
-    effective_default = default if default else rels[0]
+    # first auto-detected candidate. Optional fields default to blank so the
+    # user can skip even when a candidate was detected.
+    effective_default = default if default else ("" if optional else rels[0])
     answer = prompt(message, default=effective_default)
     if answer.isdigit() and 1 <= int(answer) <= len(rels):
         return rels[int(answer) - 1]
@@ -173,6 +182,13 @@ def collect_input_paths(existing: dict) -> dict:
         REPO_ROOT,
         suggest_multiqc(REPO_ROOT),
         default=inp.get("multiqc_data_dir") or None,
+    )
+    inp["nfcore_pipeline_info_dir"] = prompt_path(
+        "Path to nf-core/rnaseq pipeline_info directory (optional, blank to skip)",
+        REPO_ROOT,
+        suggest_pipeline_info(REPO_ROOT),
+        default=inp.get("nfcore_pipeline_info_dir") or None,
+        optional=True,
     )
     inp["samples_tsv"] = inp.get("samples_tsv", "config/samples.tsv")
     inp["contrasts_tsv"] = inp.get("contrasts_tsv", "config/contrasts.tsv")

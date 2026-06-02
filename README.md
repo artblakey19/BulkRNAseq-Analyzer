@@ -24,6 +24,8 @@ You need two outputs from a prior nf-core/rnaseq run:
 - `salmon.merged.gene_counts_length_scaled.tsv` — counts matrix
 - `multiqc_report_data/` — MultiQC data directory from the same nf-core run
 
+Optionally put `pipeline_info/` directory to add audit trail of nf-core/rnaseq in the report.
+
 ### Run in Colab
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/BulkRNAseq-Analyzer/blob/main/notebooks/colab_pipeline.ipynb)
 
@@ -146,7 +148,7 @@ docker image prune                                   # optional cleanup
 | **TFEA**                | decoupler + ULM + CollecTRI                                     | Top-30 TFs + full score table                                          |
 | **Pathway activity**           | decoupler MLM + PROGENy                                         | Per-contrast pathway activity bar chart (input: DESeq2 Wald stat).     |
 | **cMap**         | L2S2 paired query on up / down DEG signatures.                  | Ranked perturbagens                                                    |
-| **Audit trail**                | Config snapshot, MD5, session info                              | Reproducibility block                                                  |
+| **Audit trail**                | Config snapshot, MD5, session info, nf-core `pipeline_info/`. | Reproducibility block                                                  |
 
 ## Repository layout
 

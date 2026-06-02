@@ -18,4 +18,5 @@ dependencies:
   - r-plotly
   - r-htmltools
   - r-yaml
+  - r-jsonlite
   - bioconductor-summarizedexperiment

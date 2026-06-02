@@ -56,6 +56,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(DT)
   library(plotly)
+  library(jsonlite)
 })
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
@@ -366,6 +367,22 @@ run_meta <- data.frame(
 
 knitr::kable(run_meta, row.names = FALSE, booktabs = TRUE, longtable = TRUE)
 
+# nf-core/rnaseq provenance files (optional). Resolve the latest params_*.json
+# and the software-versions YAML so the upstream aligner/quantifier choice and
+# tool versions are captured here rather than re-typed into a free-text note.
+# Globs are sorted; the lexically-last params file is the most recent run
+# (timestamped names), which is the one whose counts this report consumed.
+nfcore_dir <- cfg$input$nfcore_pipeline_info_dir %||% ""
+nfcore_params_path   <- NA_character_
+nfcore_versions_path <- NA_character_
+if (nzchar(nfcore_dir)) {
+  nfcore_dir_abs <- if (grepl("^(/|~|[A-Za-z]:[/\\\\])", nfcore_dir)) nfcore_dir else rp(nfcore_dir)
+  params_hits <- sort(Sys.glob(file.path(nfcore_dir_abs, "params_*.json")))
+  if (length(params_hits)) nfcore_params_path <- params_hits[length(params_hits)]
+  ver_hits <- Sys.glob(file.path(nfcore_dir_abs, "*software*versions*.yml"))
+  if (length(ver_hits)) nfcore_versions_path <- ver_hits[1]
+}
+
 input_meta <- dplyr::bind_rows(
   file_meta("Config YAML", config_path),
   file_meta("Counts TSV", cfg$input$counts_tsv %||% NA_character_),
@@ -374,7 +391,73 @@ input_meta <- dplyr::bind_rows(
   file_meta("MultiQC data directory", cfg$input$multiqc_data_dir %||% NA_character_)
 )
 
+if (nzchar(nfcore_dir)) {
+  input_meta <- dplyr::bind_rows(
+    input_meta,
+    file_meta("nf-core params JSON", nfcore_params_path),
+    file_meta("nf-core software versions", nfcore_versions_path)
+  )
+}
+
 knitr::kable(input_meta, row.names = FALSE, booktabs = TRUE, longtable = TRUE)
+```
+
+## nf-core/rnaseq provenance
+
+```{r audit-nfcore-provenance, results='asis'}
+if (is.na(nfcore_params_path) && is.na(nfcore_versions_path)) {
+  cat(as.character(no_results(paste(
+    "No nf-core/rnaseq pipeline_info directory configured",
+    "(input.nfcore_pipeline_info_dir) — the upstream aligner/quantifier choice",
+    "and tool versions are not captured in this report."
+  ))))
+} else {
+  # Curated params: keys that change the quantity downstream analysis consumes.
+  # aligner vs pseudo_aligner is the STAR/Salmon split the analyst cares about.
+  if (!is.na(nfcore_params_path)) {
+    nf_params <- jsonlite::fromJSON(nfcore_params_path, simplifyVector = TRUE)
+    keys <- c(
+      aligner              = "Aligner",
+      pseudo_aligner       = "Pseudo-aligner",
+      genome               = "iGenomes key",
+      fasta                = "Genome FASTA",
+      gtf                  = "Annotation GTF",
+      gtf_extra_attributes = "GTF extra attributes",
+      gencode              = "GENCODE mode",
+      trimmer              = "Trimmer",
+      with_umi             = "UMI handling"
+    )
+    present <- keys[names(keys) %in% names(nf_params)]
+    fmt <- function(v) if (is.null(v) || length(v) == 0) "—" else paste(format(v), collapse = ", ")
+    param_tbl <- data.frame(
+      parameter = unname(present),
+      value     = vapply(names(present), function(k) fmt(nf_params[[k]]), character(1)),
+      stringsAsFactors = FALSE
+    )
+    cat(sprintf("**Upstream pipeline parameters** (`%s`)\n\n", basename(nfcore_params_path)))
+    cat(knitr::kable(param_tbl, row.names = FALSE, booktabs = TRUE, longtable = TRUE), sep = "\n")
+    cat("\n\n")
+  }
+
+  # Full version table flattened from the per-process YAML. The Workflow block
+  # carries the pipeline revision + Nextflow version.
+  if (!is.na(nfcore_versions_path)) {
+    vers <- yaml::read_yaml(nfcore_versions_path)
+    rows <- lapply(names(vers), function(proc) {
+      tools <- vers[[proc]]
+      data.frame(
+        process = proc,
+        tool    = names(tools),
+        version = vapply(tools, function(x) paste(format(x), collapse = ", "), character(1)),
+        stringsAsFactors = FALSE
+      )
+    })
+    ver_tbl <- do.call(rbind, rows)
+    rownames(ver_tbl) <- NULL
+    cat(sprintf("**Software versions** (`%s`)\n\n", basename(nfcore_versions_path)))
+    cat(knitr::kable(ver_tbl, row.names = FALSE, booktabs = TRUE, longtable = TRUE), sep = "\n")
+  }
+}
 ```
 
 ## Tools and references

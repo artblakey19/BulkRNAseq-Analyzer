@@ -1,0 +1,11 @@
+{
+  "input": "samplesheet.csv",
+  "outdir": "results",
+  "aligner": "star_salmon",
+  "pseudo_aligner": "salmon",
+  "genome": null,
+  "gtf_extra_attributes": "gene_name",
+  "gencode": false,
+  "trimmer": "trimgalore",
+  "with_umi": false
+}

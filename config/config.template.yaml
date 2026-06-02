@@ -10,6 +10,10 @@ project:
 input:
   counts_tsv: ""
   multiqc_data_dir: ""
+  # Optional. nf-core/rnaseq <outdir>/pipeline_info/ directory. When set, the
+  # report surfaces the upstream aligner/quantifier choice and tool versions
+  # from params_*.json + *_software_mqc_versions.yml. Leave "" to skip.
+  nfcore_pipeline_info_dir: ""
   samples_tsv: config/samples.tsv
   contrasts_tsv: config/contrasts.tsv
 de:

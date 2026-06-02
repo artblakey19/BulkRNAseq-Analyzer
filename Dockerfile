@@ -75,6 +75,7 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
         r-htmltools \
         r-matrixstats \
         r-yaml \
+        r-jsonlite \
         r-readr \
         r-msigdbr \
         r-data.table \

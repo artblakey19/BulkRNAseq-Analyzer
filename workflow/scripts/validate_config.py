@@ -28,6 +28,7 @@ SUPPORTED_CONFIG_SCHEMA: dict[str, Any] = {
     "input": {
         "counts_tsv": None,
         "multiqc_data_dir": None,
+        "nfcore_pipeline_info_dir": None,
         "samples_tsv": None,
         "contrasts_tsv": None,
     },

@@ -24,6 +24,8 @@ nf-core/rnaseq 분석 결과물 두 개가 필요:
 - `salmon.merged.gene_counts_length_scaled.tsv` — count 행렬
 - `multiqc_report_data/` — 같은 nf-core 런의 MultiQC 데이터 디렉터리
 
+선택적으로 `pipeline_info/` 디렉터리를 입력하면 nf-core/rnaseq의 audit trail이 추가됨.
+
 ### Colab에서 실행
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/artblakey19/BulkRNAseq-Analyzer/blob/main/notebooks/colab_pipeline.ko.ipynb)
 
@@ -146,7 +148,7 @@ docker image prune                                   # 캐시 정리(선택)
 | **TFEA**                  | decoupler + ULM + CollecTRI                               | Top-30 TF + 전체 score                                                 |
 | **Pathway 활성도**             | decoupler MLM + PROGENy                                    | Contrast 단위 pathway activity bar chart (input: DESeq2 Wald stat).   |
 | **cMap**         | Up/down DEG signature로 L2S2 paired query.                 | Ranked perturbagen                                                     |
-| **Audit trail**                | Config snapshot, MD5, session info                        | 재현성 정보                                                            |
+| **Audit trail**                | Config snapshot, MD5, session info, nf-core `pipeline_info/`. | 재현성 정보                                                            |
 
 ## 저장소 구조
 

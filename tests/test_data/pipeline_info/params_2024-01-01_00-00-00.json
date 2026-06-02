@@ -1,0 +1,10 @@
+{
+  "input": "samplesheet.csv",
+  "outdir": "results",
+  "aligner": "hisat2",
+  "pseudo_aligner": null,
+  "genome": null,
+  "gencode": false,
+  "trimmer": "trimgalore",
+  "with_umi": false
+}
