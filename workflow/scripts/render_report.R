@@ -28,7 +28,6 @@ template_src <- normalizePath(template_path, winslash = "/", mustWork = TRUE)
 # next to the input. In Docker the baked template lives under /app/report,
 # which is owned by mambauser — after the entrypoint drops to the host UID
 # it becomes read-only, so rendering in place fails. Stage the report dir
-# (and the sibling VERSION file, which the template reads via ../VERSION)
 # into a writable location under the output tree before rendering.
 template_src_dir <- dirname(template_src)
 stage_root       <- file.path(dirname(snakemake@output[["html"]]), "_render")
@@ -38,10 +37,6 @@ dir.create(stage_report, showWarnings = FALSE, recursive = TRUE)
 file.copy(list.files(template_src_dir, full.names = TRUE, all.files = TRUE,
                      no.. = TRUE),
           stage_report, recursive = TRUE)
-version_src <- file.path(dirname(template_src_dir), "VERSION")
-if (file.exists(version_src)) {
-  file.copy(version_src, file.path(stage_root, "VERSION"), overwrite = TRUE)
-}
 template_abs <- normalizePath(file.path(stage_report, basename(template_src)),
                               winslash = "/", mustWork = TRUE)
 

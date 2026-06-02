@@ -92,7 +92,11 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
 # side too (mounted as /project/notebooks/) so users can edit without a
 # rebuild.
 WORKDIR /app
-COPY --chown=$MAMBA_USER:$MAMBA_USER VERSION ./VERSION
+# Pipeline version baked from the release git tag (passed by docker.yml). The
+# report reads it via BULK_RNASEQ_VERSION; defaults to "unknown" for local
+# builds that don't pass the arg.
+ARG BULK_RNASEQ_VERSION=unknown
+ENV BULK_RNASEQ_VERSION=${BULK_RNASEQ_VERSION}
 COPY --chown=$MAMBA_USER:$MAMBA_USER workflow ./workflow
 COPY --chown=$MAMBA_USER:$MAMBA_USER report   ./report
 COPY --chown=$MAMBA_USER:$MAMBA_USER config/config.template.yaml ./config/config.template.yaml

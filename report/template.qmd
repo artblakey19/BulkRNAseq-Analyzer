@@ -317,6 +317,8 @@ cat("\n")
 
 ## Reproducibility summary
 
+Pipeline source: <https://github.com/artblakey19/BulkRNAseq-Analyzer>
+
 ```{r audit-reproducibility}
 file_meta <- function(label, path) {
   resolved <- if (is.null(path) || is.na(path) || !nzchar(path)) {
@@ -342,17 +344,21 @@ file_meta <- function(label, path) {
   )
 }
 
-# Canonical pipeline version lives in the `VERSION` file at the workflow
-# source root. The path is resolved relative to this template so it works
-# regardless of project_root: inside Docker the template sits at /app/report/
-# and the VERSION file at /app/VERSION; in Colab/native clones the same
-# relative layout holds.
-.tpl_dir <- tryCatch(dirname(knitr::current_input(dir = TRUE)),
-                     error = function(e) NULL)
-.version_path <- if (!is.null(.tpl_dir)) file.path(.tpl_dir, "..", "VERSION") else NULL
-pipeline_version <- if (!is.null(.version_path) && file.exists(.version_path)) {
-  trimws(readLines(.version_path, n = 1, warn = FALSE))
-} else "unknown"
+# Pipeline version comes from the release git tag (the VERSION file was
+# retired). Docker bakes it at build time into BULK_RNASEQ_VERSION (set from
+# the tag in docker.yml); native/Colab clones fall back to `git describe`
+# against the project tree.
+pipeline_version <- local({
+  env_ver <- Sys.getenv("BULK_RNASEQ_VERSION", unset = "")
+  if (nzchar(env_ver) && !identical(env_ver, "unknown")) return(env_ver)
+  git_ver <- tryCatch(
+    suppressWarnings(system2(
+      "git",
+      c("-C", shQuote(project_root), "describe", "--tags", "--always", "--dirty"),
+      stdout = TRUE, stderr = FALSE)),
+    error = function(e) character(0))
+  if (length(git_ver) && nzchar(git_ver[[1]])) git_ver[[1]] else "unknown"
+})
 
 run_meta <- data.frame(
   item = c("Report render time", "Pipeline version", "Project root", "Config used by report"),
