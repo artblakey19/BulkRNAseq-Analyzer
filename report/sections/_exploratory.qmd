@@ -7,7 +7,7 @@ sample distances use all genes (Euclidean).
 
 ::: {.lang-ko}
 VST 정규화 카운트(blind = TRUE). PCA는 variable 상위 500개 유전자를 사용,
-샘플 거리는 전체 유전자에 Euclidean 거리.
+샘플 거리는 전체 유전자에 대한 Euclidean 거리.
 :::
 
 ```{r expl-load}
