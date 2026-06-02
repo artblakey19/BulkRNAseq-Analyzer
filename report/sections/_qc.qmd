@@ -5,12 +5,59 @@ Per-sample QC metrics from MultiQC. Sample quality (degradation, contamination, 
 :::
 
 ::: lang-ko
-MultiQC 출력에서 집계한 샘플별 QC 지표. 샘플 품질(분해, 오염, 라이브러리 이상) 평가.
+MultiQC 출력에서 집계한 샘플별 QC 지표. 샘플 품질을(분해, 오염, 라이브러리 이상) 평가.
 :::
 
 ```{r qc-load}
 qc_path <- rp("results", "qc", "qc_summary.tsv")
 qc <- safe_read(qc_path, sep = "\t")
+```
+
+```{r qc-meta}
+# Single source of truth for the QC key-metric panel: order here sets facet
+# order, and the description is rendered only for metrics actually present
+# (non-NA). Salmon and STAR+RSeQC runs therefore show whichever subset they
+# produce — the description can never name a metric the plot doesn't draw.
+# Detail-only metrics (insert size, GC, read distribution, salmon ratios, …)
+# stay in the per-sample table above, not the plot.
+qc_meta <- list(
+  mapping_rate = list(
+    en = "Percentage of reads assigned to the reference. Low values may indicate contamination, poor read quality, or reference mismatch.",
+    ko = "read가 reference에 할당된 비율임. 낮다면 contamination, read quality 문제, reference mismatch 등이 의심됨."
+  ),
+
+  duplication = list(
+    en = "Percentage of duplicated reads. High duplication often suggests low library complexity, over-amplification, or low input material.",
+    ko = "중복 read의 비율임. 높으면 library complexity가 낮거나, PCR 과증폭 또는 input 부족 가능성이 있음."
+  ),
+
+  rrna_pct = list(
+    en = "Percentage of reads coming from rRNA. High values suggest inefficient rRNA removal or weak mRNA enrichment.",
+    ko = "rRNA에서 유래한 read의 비율. 높으면 rRNA 제거가 잘 되지 않았거나 mRNA enrichment가 부족했을 수 있음."
+  ),
+
+  gene_body_5_3_bias = list(
+    en = "5' to 3' coverage balance across gene bodies. Low values suggest 3' bias, commonly seen with degraded RNA.",
+    ko = "gene body에서 5'와 3' coverage가 얼마나 균형적인지에 대한 지표. 낮으면 RNA degradation에서 흔한 3' bias가 의심됨."
+  )
+)
+
+# Key metrics present as a column and not entirely NA, in qc_meta order.
+qc_present <- function() {
+  if (is.null(qc) || nrow(qc) == 0) return(character(0))
+  m <- intersect(names(qc_meta), names(qc))
+  m[vapply(m, function(c) any(!is.na(qc[[c]])), logical(1))]
+}
+
+# Render the bilingual bullet glossary for a set of metrics (asis markdown).
+emit_glossary <- function(metrics) {
+  if (length(metrics) == 0) return(invisible())
+  for (lang in c("en", "ko")) {
+    cat(sprintf("\n::: lang-%s\n\n", lang))
+    for (m in metrics) cat(sprintf("- `%s` — %s\n", m, qc_meta[[m]][[lang]]))
+    cat("\n:::\n")
+  }
+}
 ```
 
 ```{r qc-table}
@@ -19,6 +66,7 @@ if (is.null(qc) || nrow(qc) == 0) {
 } else {
   qc_show <- qc
   numeric_cols <- c("mapping_rate", "uniquely_mapped_pct",
+                    "compatible_fragment_ratio", "strand_mapping_bias",
                     "rrna_pct", "duplication", "dupradar_slope",
                     "exonic_pct", "intronic_pct", "intergenic_pct",
                     "gene_body_5_3_bias", "insert_size_median",
@@ -59,83 +107,38 @@ if (is.null(qc) || nrow(qc) == 0 || !"assigned_reads" %in% names(qc)) {
 }
 ```
 
-## Mapping, contamination, complexity
-
-```{r qc-rates, fig.width=8, fig.height=5}
-if (is.null(qc) || nrow(qc) == 0) {
-  no_results("QC rate metrics not available.")
-} else {
-  rate_cols <- intersect(
-    c("mapping_rate", "uniquely_mapped_pct", "rrna_pct",
-      "duplication", "dupradar_slope", "exonic_pct"),
-    names(qc)
-  )
-  rate_cols <- rate_cols[vapply(rate_cols, function(c) any(!is.na(qc[[c]])), logical(1))]
-  if (length(rate_cols) == 0) {
-    no_results("All rate metrics are NA.")
-  } else {
-    df <- qc |>
-      dplyr::select(sample, condition, dplyr::all_of(rate_cols)) |>
-      tidyr::pivot_longer(dplyr::all_of(rate_cols),
-                          names_to = "metric", values_to = "value") |>
-      dplyr::mutate(sample = factor(sample, levels = unique(sample)))
-    p <- ggplot2::ggplot(df, ggplot2::aes(x = sample, y = value, fill = condition)) +
-      ggplot2::geom_col() +
-      ggplot2::facet_wrap(~ metric, scales = "free_y") +
-      ggplot2::labs(x = NULL, y = NULL) +
-      ggplot2::theme_minimal(base_size = 11) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
-    print(p)
-  }
-}
-```
-
-## Sample handling indicators
+## Key QC metrics
 
 ::: lang-en
-Cohort-relative outliers in these metrics indicate sample-specific preparation issues.
-
--   `gene_body_5_3_bias` — RNA integrity indicator. \~1.0 = normal, \<0.5 = 3' bias from transcript truncation.
--   `intronic_pct`, `intergenic_pct` — excess pre-mRNA or genomic DNA carryover.
--   `insert_size_median` — fragmentation indicator.
--   `gc_content_pct` — foreign-organism contamination or adapter dimers.
+Core QC metrics for checking sample quality. Cohort-level outliers may indicate sample-specific problems.
 :::
 
 ::: lang-ko
-Cohort 내 한 샘플이 다음 지표에서 outlier로 나타나면 해당 샘플의 처리 단계를 점검.
-
--   `gene_body_5_3_bias` — RNA 무결성 지표, 1.0 부근은 정상, 0.5 미만은 transcript truncation에 의한 3' bias.
--   `intronic_pct`, `intergenic_pct` — pre-mRNA 과다 또는 genomic DNA carryover.
--   `insert_size_median` — fragmentation 지표.
--   `gc_content_pct` — 외래 종 오염 또는 adapter dimer.
+샘플 품질을 확인하기 위한 주요 QC 지표. Cohort 내 outlier가 있을 시 해당 샘플의 품질이나 처리 과정에 문제가 있었는지 점검요망.
 :::
 
-```{r qc-handling, fig.width=8, fig.height=5}
-if (is.null(qc) || nrow(qc) == 0) {
-  no_results("Handling-indicator metrics not available.")
+```{r qc-key-desc, results='asis'}
+emit_glossary(qc_present())
+```
+
+```{r qc-key, fig.width=8, fig.height=5}
+key_cols <- qc_present()
+if (length(key_cols) == 0) {
+  no_results("Key QC metrics not available.")
 } else {
-  cols <- intersect(
-    c("gene_body_5_3_bias", "intronic_pct", "intergenic_pct",
-      "insert_size_median", "gc_content_pct"),
-    names(qc)
-  )
-  cols <- cols[vapply(cols, function(c) any(!is.na(qc[[c]])), logical(1))]
-  if (length(cols) == 0) {
-    no_results("Handling-indicator metrics all NA — confirm MultiQC modules (RSeQC geneBody_coverage / read_distribution, samtools stats, FastQC) are present.")
-  } else {
-    df <- qc |>
-      dplyr::select(sample, condition, dplyr::all_of(cols)) |>
-      tidyr::pivot_longer(dplyr::all_of(cols),
-                          names_to = "metric", values_to = "value") |>
-      dplyr::mutate(sample = factor(sample, levels = unique(sample)))
-    p <- ggplot2::ggplot(df, ggplot2::aes(x = sample, y = value, fill = condition)) +
-      ggplot2::geom_col() +
-      ggplot2::facet_wrap(~ metric, scales = "free_y") +
-      ggplot2::labs(x = NULL, y = NULL) +
-      ggplot2::theme_minimal(base_size = 11) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
-    print(p)
-  }
+  df <- qc |>
+    dplyr::select(sample, condition, dplyr::all_of(key_cols)) |>
+    tidyr::pivot_longer(dplyr::all_of(key_cols),
+                        names_to = "metric", values_to = "value") |>
+    dplyr::mutate(sample = factor(sample, levels = unique(sample)),
+                  metric = factor(metric, levels = key_cols))
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = sample, y = value, fill = condition)) +
+    ggplot2::geom_col() +
+    ggplot2::facet_wrap(~ metric, scales = "free_y") +
+    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+  print(p)
 }
 ```
 
@@ -144,7 +147,7 @@ if (!is.null(qc) && "strandedness" %in% names(qc) && any(!is.na(qc$strandedness)
   calls <- unique(stats::na.omit(qc$strandedness))
   if (length(calls) == 1) {
     cat(sprintf(
-      "_Inferred strandedness (RSeQC infer_experiment): **%s** for all samples._\n",
+      "_Inferred strandedness (RSeQC infer_experiment or Salmon library type): **%s** for all samples._\n",
       calls
     ))
   } else {

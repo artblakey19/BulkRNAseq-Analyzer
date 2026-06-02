@@ -138,7 +138,7 @@ docker image prune                                   # 캐시 정리(선택)
 
 | 단계                                 | 방법                                                       | 주 산출물                                                              |
 | ------------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------- |
-| **QC**                         | MultiQC로 FastQC / STAR / Salmon / RSeQC metric 집계.      | 샘플별 QC 표, library-size·mapping-rate plot.                         |
+| **QC**                         | MultiQC 집계. plot 지표는 정량 도구에 따라 다름(Salmon vs STAR + RSeQC). | 샘플별 QC 표, library-size·핵심 지표 plot.                            |
 | **탐색 분석**                  | VST 변환 후 top-500 variable gene PCA, Euclidean 샘플 거리. | PCA, scree, dendrogram, 샘플 거리 heatmap.                            |
 | **차등발현**                   | DESeq2 Wald test + apeglm LFC shrinkage.                   | DEG 요약, volcano, MA, top-30 DEG heatmap, 전체 결과.                 |
 | **Gene-set enrichment (GSEA)** | pre-ranked GSEA (ranking matric: Wald stat).               | MSigDB H / C2:CP (Reactome, WikiPathways, PID, BioCarta) / C2:CGP / C6 |

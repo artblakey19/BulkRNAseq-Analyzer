@@ -138,7 +138,7 @@ docker image prune                                   # optional cleanup
 
 | Stage                          | Method                                                          | Primary deliverable                                                    |
 | ------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| **QC**                         | MultiQC aggregation of FastQC / STAR / Salmon / RSeQC metrics.  | Per-sample QC table, library-size and mapping-rate plots.              |
+| **QC**                         | MultiQC aggregation; plotted metrics depend on the quantifier (Salmon vs STAR + RSeQC). | Per-sample QC table, library-size and key-metric plots.               |
 | **Exploratory**                | VST; PCA on top-500 variable genes; Euclidean sample distances. | PCA, scree, dendrogram, sample-distance heatmap.                       |
 | **Differential expression**    | DESeq2 Wald test + apeglm LFC shrinkage.                        | DEG summary, volcano, MA, top-30 DEG heatmap, full results table.      |
 | **Gene-set enrichment (GSEA)** | Pre-ranked GSEA (ranking metric: Wald stat).                    | MSigDB H / C2:CP (Reactome, WikiPathways, PID, BioCarta) / C2:CGP / C6 |

@@ -20,6 +20,7 @@ out_path     <- snakemake@output[["summary"]]
 REQUIRED_COLS <- c(
   "sample", "condition", "replicate", "batch",
   "total_reads", "mapping_rate", "uniquely_mapped_pct",
+  "compatible_fragment_ratio", "strand_mapping_bias",
   "rrna_pct", "duplication", "dupradar_slope",
   "exonic_pct", "intronic_pct", "intergenic_pct",
   "gene_body_5_3_bias", "insert_size_median", "gc_content_pct",
@@ -69,7 +70,11 @@ metric_aliases <- list(
   # = over-fragmentation or adapter read-through; very long = under-fragmented
   # library or PCR chimera.
   insert_size_median  = c("insert_size_median", "median_insert_size",
-                          "insert_size_average", "avg_insert_size")
+                          "insert_size_average", "avg_insert_size"),
+  # Salmon-native quantification QC (no STAR/RSeQC equivalent). Compatible
+  # fragment ratio < 100% or non-zero strand bias flags library-prep issues.
+  compatible_fragment_ratio = c("compatible_fragment_ratio"),
+  strand_mapping_bias       = c("strand_mapping_bias")
 )
 
 normalise_name <- function(x) gsub("[^a-z0-9]", "_", tolower(x))
@@ -204,7 +209,33 @@ parse_dupradar <- function(dir) {
   )
 }
 
+# Salmon auto-detects library type; map its code to the strandedness call that
+# RSeQC infer_experiment would otherwise supply. ISR/SR = reverse (dUTP),
+# ISF/SF = forward, *U = unstranded.
+salmon_strand <- function(lt) {
+  lt <- toupper(trimws(as.character(lt)))
+  out <- rep(NA_character_, length(lt))
+  out[grepl("SR", lt)] <- "reverse"
+  out[grepl("SF", lt)] <- "forward"
+  out[grepl("U$", lt)] <- "unstranded"
+  out[is.na(lt) | lt == "" | lt == "NA"] <- NA_character_
+  out
+}
+
+# Salmon reports fragment length in its own module, not general_stats; used as
+# the insert-size fallback for pseudo-alignment runs (no Picard/samtools).
+parse_salmon_frag <- function(dir) {
+  df <- load_mqc_module(dir, "multiqc_salmon.txt")
+  if (is.null(df)) return(NULL)
+  col <- grep("frag_length_mean|fragment_length_mean|frag_length",
+              names(df), ignore.case = TRUE, value = TRUE)
+  if (length(col) == 0) return(NULL)
+  tibble(sample = df$sample,
+         salmon_frag_len = suppressWarnings(as.numeric(df[[col[1]]])))
+}
+
 mqc <- load_multiqc_general_stats(multiqc_dir)
+salmon_strand_tbl <- NULL
 
 if (!is.null(mqc)) {
   missing_in_mqc <- setdiff(samples$sample, mqc$sample)
@@ -226,7 +257,13 @@ if (!is.null(mqc)) {
     rrna_pct            = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$rrna_pct))),
     duplication         = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$duplication))),
     gc_content_pct      = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$gc_content_pct))),
-    insert_size_median  = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$insert_size_median)))
+    insert_size_median  = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$insert_size_median))),
+    compatible_fragment_ratio = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$compatible_fragment_ratio))),
+    strand_mapping_bias       = suppressWarnings(as.numeric(pick_metric(mqc, metric_aliases$strand_mapping_bias)))
+  )
+  salmon_strand_tbl <- tibble(
+    sample              = mqc$sample,
+    salmon_strandedness = salmon_strand(pick_metric(mqc, c("library_types")))
   )
   message(sprintf("qc_summary: loaded MultiQC general stats (%d samples)", nrow(mqc_tbl)))
 } else {
@@ -239,7 +276,9 @@ if (!is.null(mqc)) {
     rrna_pct            = NA_real_,
     duplication         = NA_real_,
     gc_content_pct      = NA_real_,
-    insert_size_median  = NA_real_
+    insert_size_median  = NA_real_,
+    compatible_fragment_ratio = NA_real_,
+    strand_mapping_bias       = NA_real_
   )
 }
 
@@ -248,7 +287,9 @@ extra_tbls <- list(
   strand    = parse_infer_experiment(multiqc_dir),
   readdist  = parse_read_distribution(multiqc_dir),
   dupradar  = parse_dupradar(multiqc_dir),
-  genebody  = parse_gene_body_coverage(multiqc_dir)
+  genebody  = parse_gene_body_coverage(multiqc_dir),
+  salmonfrag   = parse_salmon_frag(multiqc_dir),
+  salmonstrand = salmon_strand_tbl
 )
 
 summary_tbl <- samples %>%
@@ -265,6 +306,21 @@ summary_tbl <- left_join(summary_tbl, assigned_tbl, by = "sample")
 for (col in REQUIRED_COLS) {
   if (!col %in% names(summary_tbl)) summary_tbl[[col]] <- NA
 }
+
+# Salmon-native fallbacks: pseudo-alignment runs lack RSeQC/Picard, but Salmon
+# auto-detects library type (-> strandedness) and reports fragment length
+# (-> insert size). Fill only where the alignment-based value is absent.
+if ("salmon_strandedness" %in% names(summary_tbl)) {
+  summary_tbl$strandedness <- ifelse(is.na(summary_tbl$strandedness),
+                                     summary_tbl$salmon_strandedness,
+                                     summary_tbl$strandedness)
+}
+if ("salmon_frag_len" %in% names(summary_tbl)) {
+  summary_tbl$insert_size_median <- ifelse(is.na(summary_tbl$insert_size_median),
+                                           summary_tbl$salmon_frag_len,
+                                           summary_tbl$insert_size_median)
+}
+
 summary_tbl <- summary_tbl[, REQUIRED_COLS]
 
 dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
